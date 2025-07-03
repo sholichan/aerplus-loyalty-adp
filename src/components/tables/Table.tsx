@@ -14,7 +14,7 @@ interface TableBasicProps {
 
 export default function TableBasic({ header, children }: TableBasicProps) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+    <div className="overflow-hidden border-b border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
         <div className="min-w-[1102px]">
           <Table>

@@ -14,14 +14,13 @@ export default function Dashboard() {
 
     const auth = useSelector((state: RootState) => state.auth);
     const router = useRouter()
-    
+
     useEffect(() => {
-        if (auth.user?.role.name!=="super admin") {
+        if (auth.user?.role.name !== "super admin") {
             router.push("/signin")
-        }
-        setTimeout(() => {
+        } else {
             setIsLoading(false)
-        }, 200);
+        }
     }, [auth.token, router])
 
     return (

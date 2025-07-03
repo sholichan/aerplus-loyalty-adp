@@ -16,7 +16,6 @@ import * as Yup from 'yup';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 
-
 export default function SignInForm() {
   const dispatch = useDispatch();
   const router = useRouter();
@@ -30,6 +29,8 @@ export default function SignInForm() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  
   const formikReg = useFormik({
     initialValues: {
       phone_number: "",
@@ -135,14 +136,19 @@ export default function SignInForm() {
                   </Link>
                 </div> */}
                 <div>
-                  <Button className="w-full" size="sm" onClick={formikReg.handleSubmit}>
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    size="sm"
+                    onClick={formikReg.handleSubmit}
+                  >
                     Sign in
                   </Button>
                 </div>
               </div>
             </form>
 
-            <div className="mt-5">
+            {/* <div className="mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
                 Don&apos;t have an account? {""}
                 <Link
@@ -152,7 +158,7 @@ export default function SignInForm() {
                   Sign Up
                 </Link>
               </p>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
