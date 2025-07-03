@@ -41,7 +41,7 @@ const Voucher: React.FC = () => {
     const auth = useSelector((state: RootState) => state.auth);
 
     useEffect(() => {
-        if (!auth.token) {
+        if (auth.user?.role.name!=="super admin") {
             router.push("/signin")
         } else {
             setRefresh(!refresh)
@@ -57,7 +57,7 @@ const Voucher: React.FC = () => {
                     const res = await response.json();
                     setTableData(res.data.vouchers);
                     setTotalPages(res.data.totalPages);
-                    console.log(res.data);
+                    // console.log(res.data);
                 } catch (error) {
                     console.error("Error fetching vouchers:", error);
                 }
@@ -91,7 +91,8 @@ const Voucher: React.FC = () => {
             is_active: Yup.boolean()
         }),
         onSubmit: async (values) => {
-            console.log(values);
+            // console.log(values);
+            setIsLoading(!isLoading)
             let createValues = {}
             if (values.id == "") {
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -131,7 +132,7 @@ const Voucher: React.FC = () => {
     }
 
     const handlePaginationChange = (page: number) => {
-        if (currentPage !== totalPages) {
+        if (currentPage !== page) {
             setIsLoading(!isLoading)
             setCurrentPage(page);
         }
@@ -165,7 +166,7 @@ const Voucher: React.FC = () => {
                 className={`rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]`}
             >
                 {/* Card Header */}
-                <div className="px-6 py-5 flex justify-between">
+                <div className="px-6 py-5 md:flex md:space-y-0 justify-between space-y-6">
                     <div className="relative">
                         <span className="absolute -translate-y-1/2 left-4 top-1/2 pointer-events-none">
                             <svg
@@ -197,7 +198,7 @@ const Voucher: React.FC = () => {
                                     setSearchButton(!searchButton);
                                 }
                             }}
-                            className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
+                            className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
                         />
 
                         <button className="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 px-[7px] py-[4.5px] text-xs -tracking-[0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400"
@@ -211,10 +212,13 @@ const Voucher: React.FC = () => {
                             Search
                         </button>
                     </div>
-                    <Button size="sm" variant="primary" onClick={() => {
-                        setIsCreate(true)
-                        openModal()
-                    }}>
+                    <Button
+                        className="md:w-fit w-full"
+                        size="sm"
+                        variant="primary" onClick={() => {
+                            setIsCreate(true)
+                            openModal()
+                        }}>
                         Add Voucher +
                     </Button>
                 </div>
@@ -408,7 +412,10 @@ const Voucher: React.FC = () => {
                                                     <div style={{ color: 'red' }}>{formikCreateUpdate.errors.description}</div>
                                                 ) : null}
                                             </div>
-                                            <Button size="sm" variant="primary" onClick={formikCreateUpdate.handleSubmit}>
+                                            <Button
+                                                className="md:w-fit w-full"
+                                                size="sm"
+                                                variant="primary" onClick={formikCreateUpdate.handleSubmit}>
                                                 Submit
                                             </Button>
                                         </div>

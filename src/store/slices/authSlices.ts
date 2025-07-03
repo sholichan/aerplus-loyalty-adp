@@ -1,9 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import {jwtDecode} from "jwt-decode"
+import { jwtDecode } from "jwt-decode"
+
+interface RoleType {
+  id: string;
+  name: string;
+}
 
 interface UserPayload {
   user_name: string;
-  role: string;
+  role: RoleType;
   exp: number;
 }
 
@@ -12,9 +17,11 @@ interface AuthState {
   user: UserPayload | null;
 }
 
+const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
+
 const initialState: AuthState = {
-  token: typeof window !== 'undefined' ? localStorage.getItem("token") : null,
-  user: null
+  token,
+  user: token ? jwtDecode<UserPayload>(token) : null,
 };
 
 export const authSlice = createSlice({

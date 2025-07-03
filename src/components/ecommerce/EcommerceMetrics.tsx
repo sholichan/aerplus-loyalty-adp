@@ -26,7 +26,7 @@ export const EcommerceMetrics = () => {
         });
         const res = await response.json();
         setTableSales(res.data);
-        console.log(res.data);
+        //console.log(res.data);
       } catch (error) {
         console.error("Error fetching vouchers:", error);
       }
@@ -41,7 +41,7 @@ export const EcommerceMetrics = () => {
         });
         const res = await response.json();
         setTableUsers(res.data);
-        console.log(res.data);
+        //console.log(res.data);
       } catch (error) {
         console.error("Error fetching vouchers:", error);
       }

@@ -34,7 +34,7 @@ export default function MonthlySalesChart() {
           },
         });
         const res = await response.json();
-        console.log(res.data);
+        //console.log(res.data);
         
         // Transformasi ke chart format
         const labels = res.data.map((item: MonthlySalesStatType) =>

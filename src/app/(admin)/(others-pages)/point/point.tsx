@@ -38,7 +38,7 @@ const Point: React.FC = () => {
                 const response = await fetch(`${API_URL}/point`);
                 const res = await response.json();
                 setPointData(res.data[0]);
-                console.log(res.data);
+                //console.log(res.data);
 
             } catch (error) {
                 console.error("Error fetching point:", error);
@@ -58,7 +58,7 @@ const Point: React.FC = () => {
             point: Yup.number().required("Wajib diisi"),
         }),
         onSubmit: async (values: Partial<PointType>) => {
-            console.log(values);
+            // console.log(values);
 
             try {
                 const response = await fetch(`${API_URL}/point/create`, {

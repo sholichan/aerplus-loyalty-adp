@@ -32,7 +32,7 @@ export default function RecentOrders() {
         });
         const res = await response.json();
         setTableData(res.data);
-        console.log(res.data);
+        //console.log(res.data);
       } catch (error) {
         console.error("Error fetching vouchers:", error);
       }

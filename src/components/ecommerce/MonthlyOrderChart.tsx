@@ -33,7 +33,7 @@ export default function MonthlyOrderChart() {
           },
         });
         const res = await response.json();
-        console.log(res.data);
+        //console.log(res.data);
 
         // Transformasi ke chart format
         const labels = res.data.map((item: MonthlyOrderStatType) =>
@@ -43,7 +43,6 @@ export default function MonthlyOrderChart() {
 
         setCategories(labels); // ['Jan', 'Feb', ...]
         setChartSeries([{ name: "Orders", data }]);
-        console.log([{ name: "Orders", data }]);
       } catch (error) {
         console.error("Error fetching orders:", error);
       }

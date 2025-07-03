@@ -40,7 +40,7 @@ export default function SignInForm() {
       password: Yup.string().min(6, 'Minimal 6 karakter').required('Wajib diisi'),
     }),
     onSubmit: async (values) => {
-      console.log(values);
+      // console.log(values);
 
       try {
         const response = await fetch(`${API_URL}admin/auth/login`, {
@@ -51,7 +51,7 @@ export default function SignInForm() {
           body: JSON.stringify(values),
         });
         const res = await response.json();
-        console.log(res.data);
+        //console.log(res.data);
         if (res.statusCode == 200) {
           // localStorage.setItem("token", res.data.accessToken.token)
           dispatch(setToken(res.data.accessToken.token));

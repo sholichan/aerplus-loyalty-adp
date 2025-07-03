@@ -27,7 +27,7 @@ const Member: React.FC = () => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
-        if (!auth.token) {
+        if (auth.user?.role.name!=="super admin") {
             router.push("/signin")
         } else {
             setRefresh(!refresh)
@@ -49,7 +49,7 @@ const Member: React.FC = () => {
                     const res = await response.json();
                     setTableData(res.data.users);
                     setTotalPages(res.data.totalPages);
-                    console.log(res.data);
+                    //console.log(res.data);
                 } catch (error) {
                     console.error("Error fetching vouchers:", error);
                 }
