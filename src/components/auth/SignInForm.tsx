@@ -6,7 +6,6 @@ import { EyeCloseIcon, EyeIcon } from "@/icons";
 import { RootState } from "@/store";
 import { setToken } from "@/store/slices/authSlices";
 import { useFormik } from 'formik';
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
