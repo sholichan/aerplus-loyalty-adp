@@ -148,6 +148,7 @@ const Banner: React.FC = () => {
         }, 4000); // Autoplay setiap 4 detik
 
         return () => clearInterval(interval); // Clear saat unmount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentIndex]); // Depend on currentIndex untuk autoplay looping
     return (
         isLoading ?
@@ -410,6 +411,7 @@ const Banner: React.FC = () => {
                                         {/* Preview */}
                                         {formikCreateUpdate.values.base64 && (
                                             <div className="mt-3">
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                                 <img
                                                     src={formikCreateUpdate.values.base64}
                                                     alt="Preview"

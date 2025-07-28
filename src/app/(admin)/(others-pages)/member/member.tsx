@@ -17,8 +17,10 @@ const Member: React.FC = () => {
     const auth = useSelector((state: RootState) => state.auth);
 
     const [tableData, setTableData] = useState<UserType[]>([]);
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     const [ids, setIds] = useState<string[]>([]);
-    const [outlets, setOutlets] = useState<any[]>([]);
+    const [outlets, setOutlets] = useState([]);
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     const [refresh, setRefresh] = useState<boolean>(false)
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [currentPage, setCurrentPage] = useState(1);
@@ -54,9 +56,8 @@ const Member: React.FC = () => {
                         setTableData(res.data.users);
                         setTotalPages(res.data.totalPages);
                         const outletIds = res.data.users
-                            .map((user: any) => user.outlet_id)
+                            .map((user: UserType) => user.outlet_id)
                             .filter((id: string) => id !== null);
-                            console.log(outletIds);
                         setIds(outletIds)
                         fetchoutlets(outletIds)
                     }
@@ -65,7 +66,7 @@ const Member: React.FC = () => {
                 }
                 setIsLoading(!isLoading)
             };
-            const fetchoutlets = async (outletIds: any) => {
+            const fetchoutlets = async (outletIds: string) => {
                 try {
                     const response = await fetch(`https://aerplus.src-group.net/api/v3/outlets?ids=[${outletIds}]`, {
                         method: "GET",
@@ -76,7 +77,6 @@ const Member: React.FC = () => {
                     });
                     const res = await response.json();
                     setOutlets(res.data)
-                    console.log(res.data);
                 } catch (error) {
                     console.error("Error fetching vouchers:", error);
                 }
