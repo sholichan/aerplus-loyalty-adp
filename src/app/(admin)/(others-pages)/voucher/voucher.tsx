@@ -41,7 +41,7 @@ const Voucher: React.FC = () => {
     const auth = useSelector((state: RootState) => state.auth);
 
     useEffect(() => {
-        if (auth.user?.role.name!=="super admin") {
+        if (auth.user?.role.name !== "super admin") {
             router.push("/signin")
         } else {
             setRefresh(!refresh)
@@ -334,8 +334,11 @@ const Voucher: React.FC = () => {
                                                     placeholder="End Date"
                                                     mode="single"
                                                     onChange={(selectedDates: Date[], dateStr: string) => {
-                                                        console.log("end date:", dayjs(dateStr).format('YYYY-MM-DDTHH:mm:ss[Z]'));
-                                                        formikCreateUpdate.setFieldValue("end_date", dayjs(dateStr).format('YYYY-MM-DDTHH:mm:ss[Z]'))
+
+                                                        console.log("end date:", dayjs(dateStr)
+                                                            .format('YYYY-MM-DDTHH:mm:ss[Z]'));
+                                                        formikCreateUpdate.setFieldValue("end_date", dayjs(dateStr)
+                                                            .format('YYYY-MM-DDTHH:mm:ss[Z]'))
                                                     }}
                                                     defaultDate={formikCreateUpdate.values.end_date}
                                                 />

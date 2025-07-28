@@ -13,6 +13,7 @@ import {
   GridIcon,
   HorizontaLDots
 } from "../icons/index";
+import { PiFlagBannerFold } from "react-icons/pi";
 
 type NavItem = {
   name: string;
@@ -42,6 +43,11 @@ const navItems: NavItem[] = [
     icon: <FiShoppingCart size={20} />,
     name: "Orders",
     path: "/order",
+  },
+  {
+    icon: <PiFlagBannerFold size={20} />,
+    name: "Banners",
+    path: "/banner",
   },
   // {
   //   icon: <CalenderIcon />,

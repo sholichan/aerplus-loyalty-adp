@@ -35,6 +35,15 @@ export type PointType = {
     updated_at: string; // atau `Date`
 };
 
+export type BannerType = {
+    id: string;
+    name: string;
+    url: string;
+    is_active: string;
+    created_at: string; // atau `Date` jika diparsing ke objek Date
+    updated_at: string; // atau `Date`
+};
+
 export type VoucherType = {
     id: string;
     code: string;

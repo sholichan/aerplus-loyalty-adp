@@ -17,6 +17,8 @@ const Member: React.FC = () => {
     const auth = useSelector((state: RootState) => state.auth);
 
     const [tableData, setTableData] = useState<UserType[]>([]);
+    const [ids, setIds] = useState<string[]>([]);
+    const [outlets, setOutlets] = useState<any[]>([]);
     const [refresh, setRefresh] = useState<boolean>(false)
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [currentPage, setCurrentPage] = useState(1);
@@ -27,7 +29,7 @@ const Member: React.FC = () => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
-        if (auth.user?.role.name!=="super admin") {
+        if (auth.user?.role.name !== "super admin") {
             router.push("/signin")
         } else {
             setRefresh(!refresh)
@@ -47,13 +49,37 @@ const Member: React.FC = () => {
                         },
                     });
                     const res = await response.json();
-                    setTableData(res.data.users);
-                    setTotalPages(res.data.totalPages);
-                    //console.log(res.data);
+
+                    if (res.statusCode === 200) {
+                        setTableData(res.data.users);
+                        setTotalPages(res.data.totalPages);
+                        const outletIds = res.data.users
+                            .map((user: any) => user.outlet_id)
+                            .filter((id: string) => id !== null);
+                            console.log(outletIds);
+                        setIds(outletIds)
+                        fetchoutlets(outletIds)
+                    }
                 } catch (error) {
                     console.error("Error fetching vouchers:", error);
                 }
                 setIsLoading(!isLoading)
+            };
+            const fetchoutlets = async (outletIds: any) => {
+                try {
+                    const response = await fetch(`https://aerplus.src-group.net/api/v3/outlets?ids=[${outletIds}]`, {
+                        method: "GET",
+                        headers: {
+                            'x-api-key': "aer.ISbGawN7bHod90QlYhJRCZzfrd0gTaRU",
+                            "Content-Type": "application/json",
+                        },
+                    });
+                    const res = await response.json();
+                    setOutlets(res.data)
+                    console.log(res.data);
+                } catch (error) {
+                    console.error("Error fetching vouchers:", error);
+                }
             };
 
             fetchMember();
