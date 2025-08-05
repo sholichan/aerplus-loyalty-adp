@@ -89,6 +89,11 @@ const othersItems: NavItem[] = [
     name: "Point",
     path: "/point",
   },
+  {
+    icon: <BiCoinStack size={20} />,
+    name: "Benefit",
+    path: "/benefit",
+  },
   // {
   //   icon: <PieChartIcon />,
   //   name: "Charts",

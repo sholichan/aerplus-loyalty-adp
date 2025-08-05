@@ -35,6 +35,15 @@ export type PointType = {
     updated_at: string; // atau `Date`
 };
 
+export type BenefitType = {
+    id: string;
+    value: number;
+    type: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+};
+
 export type BannerType = {
     id: string;
     name: string;
