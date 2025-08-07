@@ -27,6 +27,16 @@ const nextConfig: NextConfig = {
         port: '3002',
         pathname: '/uploads/banner/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'stg-aerplus-loyali-api.qyubit.io',
+        pathname: '/uploads/banner/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'aerplus-loyalti-api.qyubit.io',
+        pathname: '/uploads/banner/**',
+      },
     ],
   },
 };
