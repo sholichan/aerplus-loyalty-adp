@@ -20,8 +20,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/images/icon.webp" sizes="any" />
+      </head>
       <body className={`${outfit.className} dark:bg-gray-900`}>
-      <ToastContainer style={{ zIndex: 99999 }} position='top-center' />
+        <ToastContainer style={{ zIndex: 99999 }} position='top-center' />
         <ThemeProvider>
           <Provider store={store}>
             <SidebarProvider>

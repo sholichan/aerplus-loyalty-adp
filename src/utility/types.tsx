@@ -1,17 +1,39 @@
-export type UserType = {
+// export type UserType = {
+//     id: string;
+//     user_name: string;
+//     phone_number: string;
+//     address: string | null;
+//     latitude: number | null;
+//     longitude: number | null;
+//     outlet_id: number;
+//     total_point: number;
+//     new_account: boolean;
+//     is_active: boolean;
+//     created_at: string; // atau `Date` jika kamu konversi ke Date object
+//     updated_at: string; // sama seperti di atas
+// };
+
+export interface UserType {
     id: string;
     user_name: string;
     phone_number: string;
-    address: string | null;
-    latitude: number | null;
-    longitude: number | null;
-    outlet_id: number;
-    total_point: number;
+    province_id: string | null;
+    city_id: string | null;
+    subdistrict_id: string | null;
+    address: string;
+    latitude: string;
+    longitude: string;
+    outlet_id: number | null;
+    total_point: number | null;
     new_account: boolean;
+    outlet: Outlet;
+    province: Province;
+    city: City;
+    subdistrict: Subdistrict;
     is_active: boolean;
-    created_at: string; // atau `Date` jika kamu konversi ke Date object
-    updated_at: string; // sama seperti di atas
-};
+    created_at: string;
+    updated_at: string;
+}
 
 export interface OrderType {
     id: string;
@@ -23,6 +45,9 @@ export interface OrderType {
     amount: number;
     total_amount: number;
     voucher_code: string;
+    total_benefit: number,
+    benefit_value: number,
+    benefit_type: string,
     user: UserType | null; // Ganti `any` dengan tipe `User` jika kamu punya tipe User
     created_at: string; // atau bisa pakai `Date` jika kamu parsing ke Date
     updated_at: string; // atau `Date`
@@ -47,7 +72,9 @@ export type BenefitType = {
 export type BannerType = {
     id: string;
     name: string;
+    content: string;
     url: string;
+    end_date: string;
     is_active: string;
     created_at: string; // atau `Date` jika diparsing ke objek Date
     updated_at: string; // atau `Date`
@@ -86,3 +113,37 @@ export type MonthlySalesStatType = {
     month: string;
     total_sales: string;
 };
+
+export interface Outlet {
+    id: number;
+    name: string;
+    address: string;
+    phone: string;
+    created_at: string; // ISO date string
+    updated_at: string; // ISO date string
+}
+
+export interface Province {
+    id: string;
+    name: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface City {
+    id: string;
+    province_id: string;
+    name: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Subdistrict {
+    id: string;
+    city_id: string;
+    name: string;
+    created_at: string;
+    updated_at: string;
+}
+
+

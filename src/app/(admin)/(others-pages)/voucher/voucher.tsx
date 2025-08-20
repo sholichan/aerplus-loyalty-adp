@@ -108,7 +108,6 @@ const Voucher: React.FC = () => {
                     body: JSON.stringify(isCreate ? createValues : values),
                 });
                 const res = await response.json();
-                console.log(res);
                 if (res.statusCode == 200) {
                     closeModal()
                     toast.success(`${isCreate ? "Create " : "Update "}Voucher Success!`)

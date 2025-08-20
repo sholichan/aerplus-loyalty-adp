@@ -2,18 +2,15 @@
 
 import { PulseLoading } from "@/components/common/loading";
 import Input from "@/components/form/input/InputField";
-import Label from "@/components/form/Label";
 import Pagination from "@/components/tables/Pagination";
 import Button from "@/components/ui/button/Button";
-import { Modal } from "@/components/ui/modal";
-import { useModal } from "@/hooks/useModal";
 import { RootState } from "@/store";
 import { BannerType } from "@/utility/types";
 import dayjs from 'dayjs';
 import { useFormik } from "formik";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import * as Yup from 'yup';
@@ -26,20 +23,6 @@ const Banner: React.FC = () => {
     const [totalPages, setTotalPages] = useState(10);
     const [search, setSearch] = useState<string>("")
     const [searchButton, setSearchButton] = useState<boolean>(false)
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [dragActive, setDragActive] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-    const handleFileUpload = (file: File) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            formikCreateUpdate.setFieldValue("base64", reader.result);
-        };
-        reader.readAsDataURL(file);
-    };
-
-
-    const { isOpen, openModal, closeModal } = useModal();
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const banner_url = API_URL?.split("/api")[0]
@@ -63,9 +46,8 @@ const Banner: React.FC = () => {
                     const res = await response.json();
                     setTableData(res.data.banners);
                     setTotalPages(res.data.totalPages);
-                    setCurrentIndex(0)
                 } catch (error) {
-                    console.error("Error fetching vouchers:", error);
+                    console.error("Error fetching vouchers:", error)
                 }
                 setIsLoading(!isLoading)
             };
@@ -77,18 +59,29 @@ const Banner: React.FC = () => {
 
     const formikCreateUpdate = useFormik({
         initialValues: {
+            id: "",
             name: "",
+            content: "",
+            end_date: null,
             is_active: true,
             base64: ""
         },
         validationSchema: Yup.object({
             name: Yup.string().required("Nama banner wajib diisi"),
+            content: Yup.string().required("Content banner wajib diisi"),
             base64: Yup.string().required("Banner wajib diupload")
         }),
         onSubmit: async (values) => {
-            // console.log(values);
 
             setIsLoading(!isLoading)
+            let submitValues
+            if (values.id === "") {
+                /* eslint-disable @typescript-eslint/no-unused-vars */
+                const { id, ...newValues } = values
+                submitValues = newValues
+            } else {
+                submitValues = values
+            }
 
             try {
                 const response = await fetch(`${API_URL}admin/banner/create-update`, {
@@ -96,12 +89,10 @@ const Banner: React.FC = () => {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify(values),
+                    body: JSON.stringify(submitValues),
                 });
                 const res = await response.json();
-                console.log(res);
                 if (res.statusCode == 200) {
-                    closeModal()
                     toast.success(`Create banner Success!`)
                     resetFormik()
                 }
@@ -126,30 +117,14 @@ const Banner: React.FC = () => {
     };
 
     const resetFormik = () => {
+        formikCreateUpdate.setFieldValue("id", "")
         formikCreateUpdate.setFieldValue("name", "")
+        formikCreateUpdate.setFieldValue("content", "")
+        formikCreateUpdate.setFieldValue("end_date", null)
         formikCreateUpdate.setFieldValue("base64", "")
     }
 
-    const nextSlide = () => {
-        setCurrentIndex((prev) => (prev === tableData.length - 1 ? 0 : prev + 1));
-    };
 
-    const prevSlide = () => {
-        setCurrentIndex((prev) => (prev === 0 ? tableData.length - 1 : prev - 1));
-    };
-
-    const goToSlide = (index: number) => {
-        setCurrentIndex(index);
-    };
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            nextSlide();
-        }, 4000); // Autoplay setiap 4 detik
-
-        return () => clearInterval(interval); // Clear saat unmount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentIndex]); // Depend on currentIndex untuk autoplay looping
     return (
         isLoading ?
             <PulseLoading /> :
@@ -208,7 +183,7 @@ const Banner: React.FC = () => {
                         size="sm"
                         variant="primary"
                         onClick={() => {
-                            openModal()
+                            router.push("/banner/create")
                         }}>
                         Add banner +
                     </Button>
@@ -217,112 +192,37 @@ const Banner: React.FC = () => {
                 {/* Card Body */}
                 <div className="p-4 border-t border-gray-100 dark:border-gray-800 sm:p-6">
                     <div className="space-y-6">
-                        <div className="hidden md:block relative w-full">
-                            <div className="relative  h-56 overflow-hidden rounded-lg md:h-96">
-                                {tableData.map((i, index) => (
-                                    <div
-                                        key={index}
-                                        className={`duration-700 ease-in-out absolute inset-0 transition-opacity ${index === currentIndex ? "opacity-100" : "opacity-0"
-                                            }`}
-                                    >
-                                        <Image
-                                            src={`${banner_url + i.url}`}
-                                            alt={`Slide ${index + 1}`}
-                                            width={1193}
-                                            height={500}
-                                            className="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Indicators */}
-                            <div className="absolute z-30 flex -translate-x-1/2 bottom-5 left-1/2 space-x-3 rtl:space-x-reverse">
-                                {tableData.map((_, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => goToSlide(index)}
-                                        className={`w-3 h-3 rounded-full ${currentIndex === index ? "bg-white" : "bg-gray-400"
-                                            }`}
-                                        aria-label={`Slide ${index + 1}`}
-                                    />
-                                ))}
-                            </div>
-
-                            {/* Controls */}
-                            <button
-                                onClick={prevSlide}
-                                className="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
-                            >
-                                <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70">
-                                    <svg
-                                        className="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180"
-                                        fill="none"
-                                        viewBox="0 0 6 10"
-                                    >
-                                        <path
-                                            stroke="currentColor"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M5 1 1 5l4 4"
-                                        />
-                                    </svg>
-                                    <span className="sr-only">Previous</span>
-                                </span>
-                            </button>
-
-                            <button
-                                onClick={nextSlide}
-                                className="absolute top-0 right-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
-                            >
-                                <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70">
-                                    <svg
-                                        className="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180"
-                                        fill="none"
-                                        viewBox="0 0 6 10"
-                                    >
-                                        <path
-                                            stroke="currentColor"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="m1 9 4-4-4-4"
-                                        />
-                                    </svg>
-                                    <span className="sr-only">Next</span>
-                                </span>
-                            </button>
-                        </div>
 
                         <div className="md:grid grid-cols-3 gap-6">
                             {
                                 tableData.map((i) => (
-                                    <div key={i.id} className="border pb-6 space-y-4 bg-white">
-                                        <Image src={`http://localhost:3002${i.url}`} alt={`${i.url}`} width={500} height={500} className="w-full h-auto" />
+                                    <div key={i.id} className="border border-gray-100 dark:border-gray-800 rounded-md pb-6 space-y-4 bg-gray-100 dark:bg-gray-800">
+                                        <Image src={`${banner_url + i.url}`} alt={`${i.url}`} width={500} height={500} className="w-full h-auto hover:cursor-pointer" />
                                         <div className="flex items-end justify-between">
                                             <div>
-                                                <h1 className="text-sm md:text-lg font-bold text-gray-900 pt-4 px-6">
+                                                <h1 className="text-sm md:text-lg font-bold text-gray-900 dark:text-gray-200 pt-4 px-6">
                                                     {i.name}
                                                 </h1>
                                                 <h1 className="text-xs md:text-sm text-gray-500 pt-2 px-6">
                                                     Created at {dateConvert(i.created_at)}
                                                 </h1>
                                             </div>
-                                            {/* <div className="px-6">
+                                            <div className="pr-6">
                                                 <Button
                                                     className="md:w-fit"
                                                     size="sm"
-                                                    variant="primary"
+                                                    variant="outline"
                                                     onClick={() => {
                                                         formikCreateUpdate.setFieldValue("id", i.id)
                                                         formikCreateUpdate.setFieldValue("name", i.name)
-                                                        formikCreateUpdate.setFieldValue("base64", i.url)
-                                                        openModal()
+                                                        formikCreateUpdate.setFieldValue("content", i.content)
+                                                        formikCreateUpdate.setFieldValue("end_date", i.end_date)
+                                                        formikCreateUpdate.setFieldValue("base64", banner_url + i.url)
+                                                        router.push(`/banner/update/${i.id}`)
                                                     }}>
                                                     Edit
                                                 </Button>
-                                            </div> */}
+                                            </div>
                                         </div>
                                     </div>
                                 ))
@@ -336,122 +236,6 @@ const Banner: React.FC = () => {
                         </div>
                     </div>
                 </div>
-
-                <Modal
-                    isOpen={isOpen}
-                    onClose={() => {
-                        resetFormik();
-                        closeModal();
-                    }}
-                    className="max-w-[700px] p-6 lg:p-10"
-                >
-                    <div className="flex flex-col px-2 overflow-y-auto custom-scrollbar">
-                        <div>
-                            <h5 className="mb-2 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-2xl">
-                                Add Banner
-                            </h5>
-                        </div>
-
-                        <div className="overflow-y-auto custom-scrollbar">
-                            <form>
-                                <div className="space-y-6 mt-8">
-                                    {/* Name */}
-                                    <div>
-                                        <Label>
-                                            Banner Name <span className="text-error-500">*</span>
-                                        </Label>
-                                        <Input
-                                            name="name"
-                                            type="text"
-                                            placeholder="Masukkan judul banner"
-                                            value={formikCreateUpdate.values.name}
-                                            onChange={formikCreateUpdate.handleChange}
-                                        />
-                                        {formikCreateUpdate.touched.name && formikCreateUpdate.errors.name ? (
-                                            <div style={{ color: "red" }}>{formikCreateUpdate.errors.name}</div>
-                                        ) : null}
-                                    </div>
-
-                                    {/* Drag & Drop Upload */}
-                                    <div>
-                                        <Label>
-                                            Upload Banner <span className="text-error-500">*</span>
-                                        </Label>
-                                        <div
-                                            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition 
-              ${dragActive ? "border-primary-500 bg-primary-50" : "border-gray-300 dark:border-gray-600"}`}
-                                            onDragOver={(e) => {
-                                                e.preventDefault();
-                                                setDragActive(true);
-                                            }}
-                                            onDragLeave={() => setDragActive(false)}
-                                            onDrop={(e) => {
-                                                e.preventDefault();
-                                                setDragActive(false);
-                                                const file = e.dataTransfer.files[0];
-                                                if (file) handleFileUpload(file);
-                                            }}
-                                            onClick={() => fileInputRef.current?.click()}
-                                        >
-                                            <p className="text-gray-600 dark:text-gray-300">
-                                                Drag & Drop image here or <span className="text-primary-500">click to upload</span>
-                                            </p>
-                                            <input
-                                                ref={fileInputRef}
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                onChange={(e) => {
-                                                    const file = e.target.files?.[0];
-                                                    if (file) handleFileUpload(file);
-                                                }}
-                                            />
-                                        </div>
-
-                                        {/* Preview */}
-                                        {formikCreateUpdate.values.base64 && (
-                                            <div className="mt-3">
-                                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                <img
-                                                    src={formikCreateUpdate.values.base64}
-                                                    alt="Preview"
-                                                    className="w-full max-h-48 rounded-lg border"
-                                                />
-                                            </div>
-                                        )}
-
-                                        {formikCreateUpdate.touched.base64 && formikCreateUpdate.errors.base64 ? (
-                                            <div style={{ color: "red" }}>{formikCreateUpdate.errors.base64}</div>
-                                        ) : null}
-                                    </div>
-
-                                    {/* Checkbox is_active */}
-                                    <div className="flex items-center space-x-2">
-                                        <input
-                                            type="checkbox"
-                                            id="is_active"
-                                            checked={formikCreateUpdate.values.is_active}
-                                            onChange={(e) =>
-                                                formikCreateUpdate.setFieldValue("is_active", e.target.checked)
-                                            }
-                                        />
-                                        <Label htmlFor="is_active">Aktifkan banner</Label>
-                                    </div>
-
-                                    {/* Submit */}
-                                    <Button
-                                        className="md:w-fit w-full"
-                                        size="sm"
-                                        variant="primary"
-                                        onClick={formikCreateUpdate.handleSubmit}
-                                    >
-                                        Submit
-                                    </Button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </Modal>
             </div>
     );
 };

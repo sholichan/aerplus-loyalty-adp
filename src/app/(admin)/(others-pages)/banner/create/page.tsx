@@ -1,15 +1,15 @@
 import { Metadata } from "next";
-import Order from "./order";
+import CreateBanner from "./create-banner";
 
 export const metadata: Metadata = {
   title:
-    "Orders | Aerplus Admin",
+    "Create Banner | Aerplus Admin",
 };
 export default function page() {
   return (
     <div>
       <div className="space-y-6">
-        <Order />
+        < CreateBanner/>
       </div>
     </div>
   );

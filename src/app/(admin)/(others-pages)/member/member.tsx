@@ -5,6 +5,7 @@ import Input from "@/components/form/input/InputField";
 import Pagination from "@/components/tables/Pagination";
 import TableBasic from "@/components/tables/Table";
 import { TableCell, TableRow } from "@/components/ui/table";
+import { useOutlet } from "@/context/OutletContext";
 import { RootState } from "@/store";
 import { UserType } from "@/utility/types";
 import { useRouter } from "next/navigation";
@@ -17,16 +18,14 @@ const Member: React.FC = () => {
     const auth = useSelector((state: RootState) => state.auth);
 
     const [tableData, setTableData] = useState<UserType[]>([]);
-    /* eslint-disable @typescript-eslint/no-unused-vars */
-    const [ids, setIds] = useState<string[]>([]);
-    const [outlets, setOutlets] = useState([]);
-    /* eslint-disable @typescript-eslint/no-unused-vars */
     const [refresh, setRefresh] = useState<boolean>(false)
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(10);
     const [search, setSearch] = useState<string>("")
     const [searchButton, setSearchButton] = useState<boolean>(false)
+    const [prevSelOutlet, setPrevSeloutlet] = useState<string>("")
+    const { selectedOutlet } = useOutlet()
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -40,10 +39,14 @@ const Member: React.FC = () => {
     }, [auth.token, router])
 
     useEffect(() => {
+        setPrevSeloutlet(selectedOutlet)
+        if (prevSelOutlet !== selectedOutlet) {
+            setIsLoading(true)
+        }
         if (auth.token) {
             const fetchMember = async () => {
                 try {
-                    const response = await fetch(`${API_URL}/admin/user/get-all?search=${search}&page=${currentPage}&limit=10`, {
+                    const response = await fetch(`${API_URL}/admin/user/get-all?search=${search}&outletId=${selectedOutlet}&page=${currentPage}&limit=10`, {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json",
@@ -55,37 +58,16 @@ const Member: React.FC = () => {
                     if (res.statusCode === 200) {
                         setTableData(res.data.users);
                         setTotalPages(res.data.totalPages);
-                        const outletIds = res.data.users
-                            .map((user: UserType) => user.outlet_id)
-                            .filter((id: string) => id !== null);
-                        setIds(outletIds)
-                        fetchoutlets(outletIds)
                     }
                 } catch (error) {
                     console.error("Error fetching vouchers:", error);
                 }
-                setIsLoading(!isLoading)
+                setIsLoading(false)
             };
-            const fetchoutlets = async (outletIds: string) => {
-                try {
-                    const response = await fetch(`https://aerplus.src-group.net/api/v3/outlets?ids=[${outletIds}]`, {
-                        method: "GET",
-                        headers: {
-                            'x-api-key': "aer.ISbGawN7bHod90QlYhJRCZzfrd0gTaRU",
-                            "Content-Type": "application/json",
-                        },
-                    });
-                    const res = await response.json();
-                    setOutlets(res.data)
-                } catch (error) {
-                    console.error("Error fetching vouchers:", error);
-                }
-            };
-
             fetchMember();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [refresh, currentPage, searchButton]);
+    }, [refresh, currentPage, searchButton, selectedOutlet]);
 
     const handlePaginationChange = (page: number) => {
         if (currentPage !== totalPages) {
@@ -94,9 +76,7 @@ const Member: React.FC = () => {
         }
     };
 
-
-
-    const header = ["Name", "phone", "point", "outlet", "status"];
+    const header = ["No", "Name", "phone", "address", "outlet", "point", "status"];
 
     return (
         isLoading ?
@@ -137,7 +117,7 @@ const Member: React.FC = () => {
                                     setSearchButton(!searchButton);
                                 }
                             }}
-                            className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
+                            className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
                         />
 
                         <button className="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 px-[7px] py-[4.5px] text-xs -tracking-[0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400"
@@ -155,21 +135,27 @@ const Member: React.FC = () => {
                 <div className="p-4 border-t border-gray-100 dark:border-gray-800 sm:p-6">
                     <div className="space-y-6">
                         <TableBasic header={header}>
-                            {tableData.map((i) => (
+                            {tableData.map((i, index) => (
                                 <TableRow key={i.id}>
-                                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                    <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        {(index + 1) * currentPage}
+                                    </TableCell>
+                                    <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                         {i.user_name}
                                     </TableCell>
-                                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                    <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                         {i.phone_number}
                                     </TableCell>
-                                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {i.total_point}
+                                    <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        {i.address ? i.address : "-"}
                                     </TableCell>
-                                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {i.outlet_id ? i.outlet_id : "-"}
+                                    <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        {i.outlet ? i.outlet.name : "-"}
                                     </TableCell>
-                                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                                    <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        {i.total_point ? i.total_point : 0}
+                                    </TableCell>
+                                    <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                                         {i.is_active ? "Active" : "Inactive"}
                                     </TableCell>
                                 </TableRow>

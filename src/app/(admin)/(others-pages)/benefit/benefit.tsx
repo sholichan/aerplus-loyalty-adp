@@ -40,7 +40,6 @@ const Benefit: React.FC = () => {
                 const response = await fetch(`${API_URL}/admin/benefit/get-all`);
                 const res = await response.json();
                 setBenefitData(res.data[0]);
-                //console.log(res.data);
 
             } catch (error) {
                 console.error("Error fetching benefit:", error);
@@ -76,7 +75,6 @@ const Benefit: React.FC = () => {
                     toast.success("Update benefit success!");
                     setBenefitData((prev: BenefitType) => ({ ...prev, ...values }));
                     setIsEditing(false); // close after save
-                    console.log(benfitData);
                 } else {
                     toast.warning(res.message || "Update failed!");
                 }
@@ -92,6 +90,14 @@ const Benefit: React.FC = () => {
     const dateConvert = (isoString?: string) => {
         return isoString ? dayjs(isoString).format("YYYY-MM-DD") : "-";
     };
+
+    function toCurrency(value: number): string {
+        return new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0,
+        }).format(value);
+    }
 
     return (
         <div className="space-y-6">
@@ -113,6 +119,19 @@ const Benefit: React.FC = () => {
                                 <div style={{ color: "red" }}>{formikUpdate.errors.value}</div>
                             )}
 
+                            <div>
+                                <label className="block text-sm mb-1 text-blue-100">Benefit Type</label>
+                                <select
+                                    name="type"
+                                    value={formikUpdate.values.type}
+                                    onChange={formikUpdate.handleChange}
+                                    className="w-40 text-center rounded-lg border bg-white/20 border-white/30 text-white placeholder-white/70 h-12 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                >
+                                    <option value="item" className="text-black">Item</option>
+                                    <option value="total" className="text-black">Total</option>
+                                </select>
+                            </div>
+
                             <div className="flex justify-center space-x-3 mt-4">
                                 <Button type="submit" className="bg-white/20 hover:bg-white/30 text-white border-white/30">
                                     Save
@@ -129,8 +148,8 @@ const Benefit: React.FC = () => {
                         </form>
                     ) : (
                         <>
-                            <div className="text-8xl font-bold text-white drop-shadow-lg">{benfitData?.value}</div>
-                            <p className="text-blue-100 text-lg">{benfitData.type}</p>
+                            <div className="lg:text-8xl text-4xl font-bold text-white drop-shadow-lg">{toCurrency(benfitData?.value)}</div>
+                            <p className="text-blue-100 text-2xl font-semibold">by {benfitData.type}</p>
                             <Button
                                 onClick={() => {
                                     formikUpdate.setFieldValue("id", benfitData?.id)

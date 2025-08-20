@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MonthlySalesStatType } from "@/utility/types";
+import { useOutlet } from "@/context/OutletContext";
 
 // Dynamically import the ReactApexChart component
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
@@ -23,11 +24,13 @@ export default function MonthlySalesChart() {
 
   const [chartSeries, setChartSeries] = useState<SeriesType[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const { selectedOutlet } = useOutlet();
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${API_URL}admin/stats/monthly-sales`, {
+        const response = await fetch(`${API_URL}admin/stats/monthly-sales?outletId=${selectedOutlet}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -35,15 +38,17 @@ export default function MonthlySalesChart() {
         });
         const res = await response.json();
         //console.log(res.data);
-        
-        // Transformasi ke chart format
-        const labels = res.data.map((item: MonthlySalesStatType) =>
-          new Date(`${item.month}-01`).toLocaleString("default", { month: "short" })
-        );
-        const data = res.data.map((item: MonthlySalesStatType) => Number(item.total_sales));
 
-        setCategories(labels); // ['Jan', 'Feb', ...]
-        setChartSeries([{ name: "Sales", data }]);
+        if (res.statusCode === 200) {
+          // Transformasi ke chart format
+          const labels = res.data.map((item: MonthlySalesStatType) =>
+            new Date(`${item.month}-01`).toLocaleString("default", { month: "short" })
+          );
+          const data = res.data.map((item: MonthlySalesStatType) => Number(item.total_sales));
+
+          setCategories(labels); // ['Jan', 'Feb', ...]
+          setChartSeries([{ name: "Sales", data }]);
+        }
       } catch (error) {
         console.error("Error fetching sales:", error);
       }
@@ -51,7 +56,9 @@ export default function MonthlySalesChart() {
 
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [selectedOutlet])
+
+
   const options: ApexOptions = {
     colors: ["#465fff"],
     chart: {

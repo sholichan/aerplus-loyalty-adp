@@ -6,6 +6,7 @@ import Input from "@/components/form/input/InputField";
 import Pagination from "@/components/tables/Pagination";
 import TableBasic from "@/components/tables/Table";
 import { TableCell, TableRow } from "@/components/ui/table";
+import { useOutlet } from "@/context/OutletContext";
 import { RootState } from "@/store";
 import { OrderType } from "@/utility/types";
 import dayjs from "dayjs";
@@ -26,11 +27,13 @@ const OrderPage: React.FC = () => {
     const [endDate, setEndDate] = useState("");
     const [search, setSearch] = useState<string>("")
     const [searchButton, setSearchButton] = useState<boolean>(false)
+    const [prevSelOutlet, setPrevSeloutlet] = useState<string>("")
+    const { selectedOutlet } = useOutlet();
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
-        if (auth.user?.role.name!=="super admin") {
+        if (auth.user?.role.name !== "super admin") {
             router.push("/signin")
         } else {
             setRefresh(!refresh)
@@ -39,10 +42,28 @@ const OrderPage: React.FC = () => {
     }, [auth.token, router])
 
     useEffect(() => {
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        const formatDate = (d: Date) =>
+            `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+                d.getDate()
+            ).padStart(2, "0")}`;
+
+        setStartDate(formatDate(firstDay));
+        setEndDate(formatDate(lastDay));
+    }, [auth.token, router]);
+
+
+    useEffect(() => {
+        setPrevSeloutlet(selectedOutlet)
         if (auth.token) {
-            const fetchMember = async () => {
+            if (prevSelOutlet !== selectedOutlet) {
+                setIsLoading(true)
+            }
+            const fetchOrder = async () => {
                 try {
-                    const response = await fetch(`${API_URL}/admin/order/get-all?search=${search}&page=${currentPage}&limit=10&startDate=${startDate}&endDate=${endDate}`, {
+                    const response = await fetch(`${API_URL}/admin/order/get-all?search=${search}&outletId=${selectedOutlet}&page=${currentPage}&limit=10&startDate=${startDate}&endDate=${endDate}`, {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json",
@@ -52,21 +73,21 @@ const OrderPage: React.FC = () => {
                     const res = await response.json();
                     setTableData(res.data.orders);
                     setTotalPages(res.data.totalPages);
-                    //console.log(res.data);
+                    // console.log(res.data);
                 } catch (error) {
                     console.error("Error fetching vouchers:", error);
                 }
-                setIsLoading(!isLoading)
+                setIsLoading(false)
             };
 
-            fetchMember();
+            fetchOrder();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [refresh, currentPage, searchButton, startDate, endDate]);
+    }, [refresh, currentPage, searchButton, startDate, endDate, selectedOutlet]);
 
     const handlePaginationChange = (page: number) => {
         if (currentPage !== page) {
-            setIsLoading(!isLoading)
+            setIsLoading(true)
             setCurrentPage(page);
         }
     };
@@ -84,7 +105,7 @@ const OrderPage: React.FC = () => {
     }
 
 
-    const header = ["date order", "invoice ref", "member", "outlet", "quantity", "amount", "total amount", "voucher code"];
+    const header = ["no", "date order", "invoice ref", "member", "outlet", "quantity", "amount", "total amount", "benefit"];
 
     return (
         isLoading ?
@@ -122,18 +143,18 @@ const OrderPage: React.FC = () => {
                                 }}
                                 onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                                     if (e.key === "Enter") {
-                                        setIsLoading(!isLoading);
+                                        setIsLoading(true);
                                         setSearchButton(!searchButton);
                                     }
                                 }}
-                                className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
+                                className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
                             />
 
                             <button className="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 px-[7px] py-[4.5px] text-xs -tracking-[0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400"
                                 type="submit"
 
                                 onClick={() => {
-                                    setIsLoading(!isLoading)
+                                    setIsLoading(true)
                                     setSearchButton(!searchButton)
                                 }}
                             >
@@ -152,7 +173,7 @@ const OrderPage: React.FC = () => {
                                     placeholder="Start Date"
                                     mode="single"
                                     onChange={(selectedDates: Date[], dateStr: string) => {
-                                        setIsLoading(!isLoading)
+                                        setIsLoading(true)
                                         setStartDate(dateStr)
                                     }}
                                     defaultDate={new Date(startDate)}
@@ -168,10 +189,11 @@ const OrderPage: React.FC = () => {
                                     placeholder="End Date"
                                     mode="single"
                                     onChange={(selectedDates: Date[], dateStr: string) => {
-                                        setIsLoading(!isLoading)
-                                        setEndDate(dateStr)
+                                        setIsLoading(true);
+                                        setEndDate(dateStr);
                                     }}
-                                    defaultDate={new Date(endDate)}
+                                    defaultDate={endDate ? new Date(endDate) : undefined}
+                                    minDate={startDate ? new Date(startDate) : undefined}
                                 />
                             </div>
                         </div>
@@ -179,11 +201,14 @@ const OrderPage: React.FC = () => {
                     <div className="p-4 border-t border-gray-100 dark:border-gray-800 sm:p-6">
                         <div className="space-y-6">
                             <TableBasic header={header}>
-                                {tableData.map((i) => (
+                                {tableData.map((i, index) => (
                                     <TableRow key={i.id}>
-                                        <TableCell className="px-4 py-3 text-success-600 text-theme-sm">
-                                            <div className="w-full bg-success-100 p-2 rounded-lg text-center">
-                                                <span className="block font-medium text-theme-sm">
+                                        <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                            {(index + 1) * currentPage}
+                                        </TableCell>
+                                        <TableCell className="py-3 text-theme-sm  text-gray-500 dark:text-gray-400">
+                                            <div className="rounded-sm">
+                                                <span className="block text-theme-sm">
                                                     {dateConvert(i.created_at)}
                                                 </span>
                                                 <span className="block text-theme-xs">
@@ -191,26 +216,26 @@ const OrderPage: React.FC = () => {
                                                 </span>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                             {i.ref_id}
                                         </TableCell>
-                                        <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                             {i.user ? i.user?.user_name : "-"}
                                         </TableCell>
-                                        <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                             {i.outlet}
                                         </TableCell>
-                                        <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                                        <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                                             {i.qty}
                                         </TableCell>
-                                        <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                             {i.amount}
                                         </TableCell>
-                                        <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                             {i.total_amount}
                                         </TableCell>
-                                        <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                                            {i.voucher_code}
+                                        <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                                            {i.total_benefit}
                                         </TableCell>
 
                                     </TableRow>
