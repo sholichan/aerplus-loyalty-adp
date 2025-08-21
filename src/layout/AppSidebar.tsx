@@ -10,6 +10,7 @@ import { BsPeople } from "react-icons/bs";
 import { FiShoppingCart } from "react-icons/fi";
 import { PiFlagBannerFold } from "react-icons/pi";
 import { useSidebar } from "../context/SidebarContext";
+import { BsShopWindow } from "react-icons/bs";
 import {
   ChevronDownIcon,
   GridIcon,
@@ -49,6 +50,11 @@ const navItems: NavItem[] = [
     icon: <PiFlagBannerFold size={20} />,
     name: "Banners",
     path: "/banner",
+  },
+  {
+    icon: <BsShopWindow size={20} />,
+    name: "Outlets",
+    path: "/outlet",
   },
   // {
   //   icon: <CalenderIcon />,

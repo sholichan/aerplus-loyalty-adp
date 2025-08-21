@@ -151,7 +151,7 @@ const Voucher: React.FC = () => {
         { value: "percentage", label: "Percentage" },
         { value: "fixed", label: "Fixed" },
     ];
-    const header = ["voucher code", "discount type", "discount value", "start date", "end date", "description", "action"];
+    const header = ["no", "voucher code", "discount type", "discount value", "start date", "end date", "description", "action"];
 
     if (isLoading) {
         return (
@@ -226,8 +226,11 @@ const Voucher: React.FC = () => {
                 <div className="p-4 border-t border-gray-100 dark:border-gray-800 sm:p-6">
                     <div className="space-y-6">
                         <TableBasic header={header}>
-                            {tableData.map((i) => (
+                            {tableData.map((i, index) => (
                                 <TableRow key={i.id}>
+                                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400 capitalize">
+                                        {(currentPage - 1) * 10 + (index + 1)}
+                                    </TableCell>
                                     <TableCell className="px-4 py-3 font-semibold text-blue-500 text-center text-theme-sm ">
                                         <div className="w-full bg-blue-200 py-4 rounded-lg">
                                             {i.code}

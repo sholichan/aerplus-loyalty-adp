@@ -26,7 +26,7 @@ export default function TableBasic({ header, children }: TableBasicProps) {
                     <TableCell
                       key={index}
                       isHeader
-                      className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                      className="p-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                     >
                       {item}
                     </TableCell>

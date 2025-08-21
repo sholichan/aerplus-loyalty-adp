@@ -26,7 +26,7 @@ export interface UserType {
     outlet_id: number | null;
     total_point: number | null;
     new_account: boolean;
-    outlet: Outlet;
+    outlet: OutletType;
     province: Province;
     city: City;
     subdistrict: Subdistrict;
@@ -114,7 +114,7 @@ export type MonthlySalesStatType = {
     total_sales: string;
 };
 
-export interface Outlet {
+export interface OutletType {
     id: number;
     name: string;
     address: string;

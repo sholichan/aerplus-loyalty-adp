@@ -6,14 +6,14 @@ import {
   TableCell,
   TableRow
 } from "../ui/table";
-import { OrderType, Outlet } from "@/utility/types";
+import { OrderType, OutletType } from "@/utility/types";
 import { useOutlet } from "@/context/OutletContext";
 
 export type TopUsertytpe = {
   id: string,
   user_name: string,
   phone_number: string,
-  outlet: Outlet,
+  outlet: OutletType,
   orders: OrderType[],
   order_count: number
 }
@@ -44,7 +44,7 @@ export default function TopUserOrders() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedOutlet])
 
-  const header = ["No", "Name", "phone", "outlet", "orders"];
+  const header = ["No", "Name", "phone", "orders", "outlet"];
 
   return (
     <div
@@ -56,23 +56,23 @@ export default function TopUserOrders() {
       </div>
       <div className="p-4 border-t border-gray-100 dark:border-gray-800 sm:p-6">
         <div className="space-y-6">
-          {tableData.length >= 1 ? <TableBasic header={header}>
+          {tableData?.length >= 1 ? <TableBasic header={header}>
             {tableData?.map((i: TopUsertytpe, index: number) => (
               <TableRow key={i.id}>
-                <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {index + 1}
                 </TableCell>
-                <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {i.user_name}
                 </TableCell>
-                <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {i.phone_number}
                 </TableCell>
-                <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {i.outlet ? i.outlet.name : "-"}
-                </TableCell>
-                <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                   {i.order_count}
+                </TableCell>
+                <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  {i.outlet ? i.outlet.name : "-"}
                 </TableCell>
               </TableRow>
             ))}

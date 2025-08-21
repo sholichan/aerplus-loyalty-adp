@@ -4,28 +4,27 @@ import { PulseLoading } from "@/components/common/loading";
 import Input from "@/components/form/input/InputField";
 import Pagination from "@/components/tables/Pagination";
 import TableBasic from "@/components/tables/Table";
+import Button from "@/components/ui/button/Button";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { useOutlet } from "@/context/OutletContext";
 import { RootState } from "@/store";
-import { UserType } from "@/utility/types";
+import { OutletType } from "@/utility/types";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 
-const Member: React.FC = () => {
+const Outlet: React.FC = () => {
     const router = useRouter()
     const auth = useSelector((state: RootState) => state.auth);
 
-    const [tableData, setTableData] = useState<UserType[]>([]);
+    const [tableData, setTableData] = useState<OutletType[]>([]);
     const [refresh, setRefresh] = useState<boolean>(false)
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(10);
     const [search, setSearch] = useState<string>("")
     const [searchButton, setSearchButton] = useState<boolean>(false)
-    const [prevSelOutlet, setPrevSeloutlet] = useState<string>("")
-    const { selectedOutlet } = useOutlet()
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -39,14 +38,10 @@ const Member: React.FC = () => {
     }, [auth.token, router])
 
     useEffect(() => {
-        setPrevSeloutlet(selectedOutlet)
-        if (prevSelOutlet !== selectedOutlet) {
-            setIsLoading(true)
-        }
         if (auth.token) {
-            const fetchMember = async () => {
+            const fetchOutlet = async () => {
                 try {
-                    const response = await fetch(`${API_URL}/admin/user/get-all?search=${search}&outletId=${selectedOutlet}&page=${currentPage}&limit=10`, {
+                    const response = await fetch(`${API_URL}/admin/outlet/get-all?search=${search}&page=${currentPage}&limit=10`, {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json",
@@ -56,7 +51,7 @@ const Member: React.FC = () => {
                     const res = await response.json();
 
                     if (res.statusCode === 200) {
-                        setTableData(res.data.users);
+                        setTableData(res.data.outlets);
                         setTotalPages(res.data.totalPages);
                     }
                 } catch (error) {
@@ -64,10 +59,10 @@ const Member: React.FC = () => {
                 }
                 setIsLoading(false)
             };
-            fetchMember();
+            fetchOutlet();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [refresh, currentPage, searchButton, selectedOutlet]);
+    }, [refresh, currentPage, searchButton]);
 
     const handlePaginationChange = (page: number) => {
         if (currentPage !== totalPages) {
@@ -76,7 +71,54 @@ const Member: React.FC = () => {
         }
     };
 
-    const header = ["No", "Name", "phone", "address", "outlet", "point", "status"];
+    const syncOutletHandle = async () => {
+        try {
+            const response = await fetch(`${API_URL}/admin/outlet/sync-outlet`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${auth.token}`,
+                },
+            });
+            const res = await response.json();
+
+            if (res.statusCode === 200) {
+                toast.success("Outlets successfully syncronized")
+            } else {
+                toast.warn(`Outlets syncronizing failed!`)
+            }
+        } catch (error) {
+            toast.warn(`Outlets syncronizing failed! with error: ${error}`)
+            console.error("Error fetching vouchers:", error);
+        }
+        setRefresh(!refresh)
+
+    }
+
+    function camelCaseWithSpaces(str: string) {
+        let result = '';
+        let capitalizeNext = true;
+
+        for (let i = 0; i < str.length; i++) {
+            const char = str[i];
+
+            if (char === ' ') {
+                result += char;
+                capitalizeNext = true;
+            } else {
+                if (capitalizeNext) {
+                    result += char.toUpperCase();
+                    capitalizeNext = false;
+                } else {
+                    result += char.toLowerCase();
+                }
+            }
+        }
+        setSearch(result)
+    }
+
+
+    const header = ["No", "outlet", "phone", "address"];
 
     return (
         isLoading ?
@@ -106,10 +148,10 @@ const Member: React.FC = () => {
                         </span>
                         <Input
                             type="text"
-                            placeholder="Search member"
+                            placeholder="Search outlet"
                             value={search}
                             onChange={(e) => {
-                                setSearch(e.target.value)
+                                camelCaseWithSpaces(e.target.value)
                             }}
                             onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                                 if (e.key === "Enter") {
@@ -131,6 +173,13 @@ const Member: React.FC = () => {
                             Search
                         </button>
                     </div>
+                    <Button
+                        className="md:w-fit w-full"
+                        size="sm"
+                        variant="primary"
+                        onClick={syncOutletHandle}>
+                        Sync Outlet
+                    </Button>
                 </div>
                 <div className="p-4 border-t border-gray-100 dark:border-gray-800 sm:p-6">
                     <div className="space-y-6">
@@ -138,25 +187,16 @@ const Member: React.FC = () => {
                             {tableData.map((i, index) => (
                                 <TableRow key={i.id}>
                                     <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                       {(currentPage - 1) * 10 + (index + 1)}
+                                        {(currentPage - 1) * 10 + (index + 1)}
                                     </TableCell>
                                     <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {i.user_name}
+                                        {i.name}
                                     </TableCell>
                                     <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {i.phone_number}
+                                        {i.phone}
                                     </TableCell>
                                     <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                         {i.address ? i.address : "-"}
-                                    </TableCell>
-                                    <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {i.outlet ? i.outlet.name : "-"}
-                                    </TableCell>
-                                    <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {i.total_point ? i.total_point : 0}
-                                    </TableCell>
-                                    <TableCell className="p-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                                        {i.is_active ? "Active" : "Inactive"}
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -173,4 +213,4 @@ const Member: React.FC = () => {
     );
 };
 
-export default Member;
+export default Outlet;

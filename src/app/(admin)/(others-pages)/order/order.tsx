@@ -203,10 +203,10 @@ const OrderPage: React.FC = () => {
                             <TableBasic header={header}>
                                 {tableData.map((i, index) => (
                                     <TableRow key={i.id}>
-                                        <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            {(index + 1) * currentPage}
+                                        <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                           {(currentPage - 1) * 10 + (index + 1)}
                                         </TableCell>
-                                        <TableCell className="py-3 text-theme-sm  text-gray-500 dark:text-gray-400">
+                                        <TableCell className="p-3 text-theme-sm  text-gray-500 dark:text-gray-400">
                                             <div className="rounded-sm">
                                                 <span className="block text-theme-sm">
                                                     {dateConvert(i.created_at)}
@@ -216,25 +216,25 @@ const OrderPage: React.FC = () => {
                                                 </span>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                             {i.ref_id}
                                         </TableCell>
-                                        <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                             {i.user ? i.user?.user_name : "-"}
                                         </TableCell>
-                                        <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                             {i.outlet}
                                         </TableCell>
-                                        <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                                        <TableCell className="p-3 text-gray-500 text-theme-sm dark:text-gray-400">
                                             {i.qty}
                                         </TableCell>
-                                        <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                             {i.amount}
                                         </TableCell>
-                                        <TableCell className="py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                             {i.total_amount}
                                         </TableCell>
-                                        <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                                        <TableCell className="p-3 text-gray-500 text-theme-sm dark:text-gray-400">
                                             {i.total_benefit}
                                         </TableCell>
 
