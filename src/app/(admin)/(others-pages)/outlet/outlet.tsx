@@ -13,8 +13,12 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
+import { useDispatch } from "react-redux";
+import { clearToken } from "@/store/slices/authSlices";
+
 
 const Outlet: React.FC = () => {
+    const dispatch = useDispatch()
     const router = useRouter()
     const auth = useSelector((state: RootState) => state.auth);
 
@@ -29,8 +33,14 @@ const Outlet: React.FC = () => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
-        if (auth.user?.role.name !== "super admin") {
+        const now = Date.now() / 1000;
+        let exp = true
+        if (auth.user?.exp !== undefined) exp = now > auth.user?.exp
+        if (auth.user?.role.name !== "super admin" || exp) {
+            localStorage.clear()
+            dispatch(clearToken())
             router.push("/signin")
+            toast.warn("Your session has expired, please login!")
         } else {
             setRefresh(!refresh)
         }
@@ -65,10 +75,8 @@ const Outlet: React.FC = () => {
     }, [refresh, currentPage, searchButton]);
 
     const handlePaginationChange = (page: number) => {
-        if (currentPage !== totalPages) {
-            setIsLoading(!isLoading)
-            setCurrentPage(page);
-        }
+        setIsLoading(true);
+        setCurrentPage(page);
     };
 
     const syncOutletHandle = async () => {
@@ -127,7 +135,7 @@ const Outlet: React.FC = () => {
                 className={`rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]`}
             >
                 {/* Card Header */}
-                <div className="px-6 py-5 flex justify-between">
+                <div className="px-6 py-5 space-y-5 md:space-y-0 md:flex justify-between">
                     <div className="relative">
                         <span className="absolute -translate-y-1/2 left-4 top-1/2 pointer-events-none">
                             <svg
@@ -155,6 +163,7 @@ const Outlet: React.FC = () => {
                             }}
                             onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                                 if (e.key === "Enter") {
+                                    setCurrentPage(1)
                                     setIsLoading(!isLoading);
                                     setSearchButton(!searchButton);
                                 }
@@ -166,6 +175,7 @@ const Outlet: React.FC = () => {
                             type="submit"
 
                             onClick={() => {
+                                setCurrentPage(1)
                                 setIsLoading(!isLoading)
                                 setSearchButton(!searchButton)
                             }}

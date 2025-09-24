@@ -15,7 +15,11 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import * as Yup from 'yup';
 
+import { useDispatch } from "react-redux";
+import { clearToken } from "@/store/slices/authSlices";
+
 const Banner: React.FC = () => {
+    const dispatch = useDispatch()
     const [tableData, setTableData] = useState<BannerType[]>([]);
     const [refresh, setRefresh] = useState<boolean>(false)
     const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -30,8 +34,14 @@ const Banner: React.FC = () => {
     const auth = useSelector((state: RootState) => state.auth);
 
     useEffect(() => {
-        if (auth.user?.role.name !== "super admin") {
+        const now = Date.now() / 1000;
+        let exp = true
+        if (auth.user?.exp !== undefined) exp = now > auth.user?.exp
+        if (auth.user?.role.name !== "super admin" || exp) {
+            localStorage.clear()
+            dispatch(clearToken())
             router.push("/signin")
+            toast.warn("Your session has expired, please login!")
         } else {
             setRefresh(!refresh)
         }

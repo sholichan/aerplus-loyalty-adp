@@ -74,7 +74,7 @@ export default function SignInForm() {
               Sign In
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Enter your phone number and password to sign in!
+              Enter username and password to sign in!
             </p>
           </div>
           <div>
@@ -82,12 +82,12 @@ export default function SignInForm() {
               <div className="space-y-6">
                 <div>
                   <Label>
-                    Phone Number <span className="text-error-500">*</span>{" "}
+                    Username <span className="text-error-500">*</span>{" "}
                   </Label>
                   <Input
                     name="phone_number"
                     type="text"
-                    placeholder="08567890987"
+                    placeholder="username"
                     value={formikReg.values.phone_number}
                     onChange={formikReg.handleChange} />
                   {formikReg.touched.phone_number && formikReg.errors.phone_number ? (
@@ -102,7 +102,7 @@ export default function SignInForm() {
                     <Input
                       name="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
+                      placeholder="password"
                       value={formikReg.values.password}
                       onChange={formikReg.handleChange} />
                     {formikReg.touched.password && formikReg.errors.password ? (

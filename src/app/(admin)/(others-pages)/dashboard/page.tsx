@@ -9,7 +9,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
+import { useDispatch } from "react-redux";
+import { clearToken } from "@/store/slices/authSlices";
+import { toast } from "react-toastify";
+
 export default function Dashboard() {
+    const dispatch = useDispatch()
+
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
@@ -18,10 +24,16 @@ export default function Dashboard() {
     const router = useRouter()
 
     useEffect(() => {
-        if (auth.user?.role.name !== "super admin") {
+        const now = Date.now() / 1000;
+        let exp = true
+        if (auth.user?.exp !== undefined) exp = now > auth.user?.exp
+        if (auth.user?.role.name !== "super admin" || exp) {
+            localStorage.clear()
+            dispatch(clearToken())
             router.push("/signin")
+            toast.warn("Your session has expired, please login!")
         } else {
-            setIsLoading(false)
+            setIsLoading(!isLoading)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [auth.token, router])

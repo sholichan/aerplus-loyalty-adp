@@ -23,7 +23,11 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import * as Yup from 'yup';
 
+import { useDispatch } from "react-redux";
+import { clearToken } from "@/store/slices/authSlices";
+
 const Voucher: React.FC = () => {
+    const dispatch = useDispatch()
     const [tableData, setTableData] = useState<VoucherType[]>([]);
     const [refresh, setRefresh] = useState<boolean>(false)
     const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -41,13 +45,20 @@ const Voucher: React.FC = () => {
     const auth = useSelector((state: RootState) => state.auth);
 
     useEffect(() => {
-        if (auth.user?.role.name !== "super admin") {
+        const now = Date.now() / 1000;
+        let exp = true
+        if (auth.user?.exp !== undefined) exp = now > auth.user?.exp
+        if (auth.user?.role.name !== "super admin" || exp) {
+            localStorage.clear()
+            dispatch(clearToken())
             router.push("/signin")
+            toast.warn("Your session has expired, please login!")
         } else {
             setRefresh(!refresh)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [auth.token, router])
+
 
     useEffect(() => {
         if (auth.token) {
@@ -131,10 +142,8 @@ const Voucher: React.FC = () => {
     }
 
     const handlePaginationChange = (page: number) => {
-        if (currentPage !== page) {
-            setIsLoading(!isLoading)
-            setCurrentPage(page);
-        }
+        setIsLoading(true);
+        setCurrentPage(page);
     };
 
     const resetFormik = () => {
@@ -193,6 +202,7 @@ const Voucher: React.FC = () => {
                             }}
                             onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                                 if (e.key === "Enter") {
+                                    setCurrentPage(1)
                                     setIsLoading(!isLoading);
                                     setSearchButton(!searchButton);
                                 }
@@ -204,6 +214,7 @@ const Voucher: React.FC = () => {
                             type="submit"
 
                             onClick={() => {
+                                setCurrentPage(1)
                                 setIsLoading(!isLoading)
                                 setSearchButton(!searchButton)
                             }}

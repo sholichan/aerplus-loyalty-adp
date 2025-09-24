@@ -14,7 +14,12 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
+import { useDispatch } from "react-redux";
+import { clearToken } from "@/store/slices/authSlices";
+import { toast } from "react-toastify";
+
 const OrderPage: React.FC = () => {
+    const dispatch = useDispatch()
     const router = useRouter()
     const auth = useSelector((state: RootState) => state.auth);
 
@@ -33,8 +38,14 @@ const OrderPage: React.FC = () => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
-        if (auth.user?.role.name !== "super admin") {
+        const now = Date.now() / 1000;
+        let exp = true
+        if (auth.user?.exp !== undefined) exp = now > auth.user?.exp
+        if (auth.user?.role.name !== "super admin" || exp) {
+            localStorage.clear()
+            dispatch(clearToken())
             router.push("/signin")
+            toast.warn("Your session has expired, please login!")
         } else {
             setRefresh(!refresh)
         }
@@ -86,10 +97,8 @@ const OrderPage: React.FC = () => {
     }, [refresh, currentPage, searchButton, startDate, endDate, selectedOutlet]);
 
     const handlePaginationChange = (page: number) => {
-        if (currentPage !== page) {
-            setIsLoading(true)
-            setCurrentPage(page);
-        }
+        setIsLoading(true);
+        setCurrentPage(page);
     };
 
     const dateConvert = (isoString: string) => {
@@ -143,6 +152,7 @@ const OrderPage: React.FC = () => {
                                 }}
                                 onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                                     if (e.key === "Enter") {
+                                        setCurrentPage(1)
                                         setIsLoading(true);
                                         setSearchButton(!searchButton);
                                     }
@@ -154,6 +164,7 @@ const OrderPage: React.FC = () => {
                                 type="submit"
 
                                 onClick={() => {
+                                    setCurrentPage(1)
                                     setIsLoading(true)
                                     setSearchButton(!searchButton)
                                 }}
@@ -204,7 +215,7 @@ const OrderPage: React.FC = () => {
                                 {tableData.map((i, index) => (
                                     <TableRow key={i.id}>
                                         <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                           {(currentPage - 1) * 10 + (index + 1)}
+                                            {(currentPage - 1) * 10 + (index + 1)}
                                         </TableCell>
                                         <TableCell className="p-3 text-theme-sm  text-gray-500 dark:text-gray-400">
                                             <div className="rounded-sm">
