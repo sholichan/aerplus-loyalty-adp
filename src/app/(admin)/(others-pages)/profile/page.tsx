@@ -1,6 +1,6 @@
 import ComponentCard from "@/components/common/ComponentCard";
 import { Metadata } from "next";
-import Prifile from "./profile";
+import Profile from "./profile";
 
 export const metadata: Metadata = {
   title:
@@ -11,7 +11,7 @@ export default function page() {
     <div>
       <div className="space-y-6">
         <ComponentCard title="Profile">
-          <Prifile />
+          <Profile />
         </ComponentCard>
       </div>
     </div>

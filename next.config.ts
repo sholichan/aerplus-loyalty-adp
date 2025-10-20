@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
         source: '/api/:path*',
         destination: 'http://localhost:3002/api/:path*',
       },
+      {
+        source: '/rubick/:path*',
+        destination: 'https://wa.rubick.qyubit.io/:path*',
+      },
     ];
   },
   images: {

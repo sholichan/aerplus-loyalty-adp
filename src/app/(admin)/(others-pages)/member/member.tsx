@@ -13,6 +13,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { clearToken } from "@/store/slices/authSlices";
 import { toast } from "react-toastify";
+import dayjs from "dayjs";
 
 const Member: React.FC = () => {
     const dispatch = useDispatch();
@@ -115,7 +116,7 @@ const Member: React.FC = () => {
         setCurrentPage(page);
     };
 
-    const header = ["No", "Name", "Phone", "Address", "Outlet", "Point", "Status"];
+    const header = ["No", "Name", "Phone", "Address", "Outlet", "Join date", "Point", "Status"];
 
     // === CSV EXPORT HANDLER ===
     const exportToCSV = () => {
@@ -127,6 +128,7 @@ const Member: React.FC = () => {
                 i.phone_number,
                 i.address ? i.address : "-",
                 i.outlet ? i.outlet.name : "-",
+                i.created_at ? dateConvert(i.created_at) + " " + timeConvert(i.created_at) : "-",
                 i.total_point ? i.total_point : 0,
                 i.is_active ? "Active" : "Inactive",
             ]),
@@ -144,6 +146,18 @@ const Member: React.FC = () => {
         link.click();
         document.body.removeChild(link);
     };
+
+    const dateConvert = (isoString: string) => {
+        const parsedDate = dayjs(isoString);
+        const date: string = parsedDate.format('YYYY-MM-DD');
+        return date
+    }
+
+    const timeConvert = (isoString: string) => {
+        const parsedDate = dayjs(isoString);
+        const time: string = parsedDate.format('HH:mm:ss');
+        return time
+    }
 
 
     return isLoading ? (
@@ -231,6 +245,16 @@ const Member: React.FC = () => {
                                 </TableCell>
                                 <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                     {i.outlet ? i.outlet.name : "-"}
+                                </TableCell>
+                                <TableCell className="p-3 text-theme-sm  text-gray-500 dark:text-gray-400">
+                                    <div className="rounded-sm">
+                                        <span className="block text-theme-sm">
+                                            {dateConvert(i.created_at)}
+                                        </span>
+                                        <span className="block text-theme-xs">
+                                            {timeConvert(i.created_at)}
+                                        </span>
+                                    </div>
                                 </TableCell>
                                 <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                     {i.total_point ? i.total_point : 0}

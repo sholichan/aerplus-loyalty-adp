@@ -11,6 +11,7 @@ import { FiShoppingCart } from "react-icons/fi";
 import { PiFlagBannerFold } from "react-icons/pi";
 import { useSidebar } from "../context/SidebarContext";
 import { BsShopWindow } from "react-icons/bs";
+import { IoSettingsOutline } from "react-icons/io5";
 import {
   ChevronDownIcon,
   GridIcon,
@@ -100,6 +101,11 @@ const othersItems: NavItem[] = [
     icon: <BiCoinStack size={20} />,
     name: "Benefit",
     path: "/benefit",
+  },
+  {
+    icon: <IoSettingsOutline size={20} />,
+    name: "WhatsApp",
+    path: "/whatsapp",
   },
   // {
   //   icon: <PieChartIcon />,

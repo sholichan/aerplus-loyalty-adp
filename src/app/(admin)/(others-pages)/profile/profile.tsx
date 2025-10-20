@@ -15,7 +15,7 @@ import { RootState } from "@/store";
 import { UserType } from "@/utility/types";
 
 
-export default function Prifile() {
+export default function Profile() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { isOpen, openModal, closeModal } = useModal();
     const dispatch = useDispatch()
