@@ -46,7 +46,7 @@ const WhatsAppSessionPage: React.FC = () => {
     useEffect(() => {
         const fetchSession = async () => {
             try {
-                const response = await fetch("/rubick/sessions/find/aerplus", {
+                const response = await fetch("/rubick/sessions/find/jumbo", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -72,7 +72,7 @@ const WhatsAppSessionPage: React.FC = () => {
     const handleDeleteSession = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(`/rubick/sessions/delete/aerplus`, {
+            const response = await fetch(`/rubick/sessions/delete/jumbo`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -102,7 +102,7 @@ const WhatsAppSessionPage: React.FC = () => {
                     apikey: "QBIT_A4gx18YGxKAvR01ClcHpcR7TjZUNtwvE",
                 },
                 body: new URLSearchParams({
-                    id: "aerplus",
+                    id: "jumbo",
                     typeAuth: "qr",
                 }),
             });
