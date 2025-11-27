@@ -35,7 +35,7 @@ const navItems: NavItem[] = [
   {
     icon: <BsPeople size={20} />,
     name: "Members",
-    path: "/member",
+    path: "/memberNew",
   },
   // {
   //   icon: <HiOutlineReceiptPercent size={20} />,

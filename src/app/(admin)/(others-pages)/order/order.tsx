@@ -125,7 +125,7 @@ const OrderPage: React.FC = () => {
                 >
                     {/* Card Header */}
                     <div className="px-6 pt-10 pb-5 md:flex justify-between space-y-6 md:space-y-0">
-                        <div className="relative">
+                        <div className="relative" title="search by invoice, member name, or member phone (6285xxx)">
                             <span className="absolute -translate-y-1/2 left-4 top-1/2 pointer-events-none">
                                 <svg
                                     className="fill-gray-500 dark:fill-gray-400"
@@ -145,7 +145,7 @@ const OrderPage: React.FC = () => {
                             </span>
                             <Input
                                 type="text"
-                                placeholder="Search by invoice"
+                                placeholder="Search orders..."
                                 value={search}
                                 onChange={(e) => {
                                     setSearch(e.target.value)
