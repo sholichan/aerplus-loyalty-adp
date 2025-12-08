@@ -455,7 +455,7 @@ export default function UserOrderTable() {
                     </tbody>
                 </table>
             </div>
-            <div className="flex justify-end py-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-end p-4 border-t border-gray-200 dark:border-gray-700">
                 <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}

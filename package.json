@@ -3,8 +3,8 @@
   "version": "2.0.2",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint"
   },
@@ -28,7 +28,7 @@
     "flatpickr": "^4.6.13",
     "formik": "^2.4.6",
     "jwt-decode": "^4.0.0",
-    "next": "15.2.3",
+    "next": "^16.0.7",
     "node-base64-img": "^2.0.0",
     "quill": "^2.0.3",
     "quill-delta-to-markdown": "^0.6.0",

@@ -90,15 +90,15 @@ const UpdateBanner = ({ id }: BannerId) => {
                 });
                 const res = await response.json();
                 if (res.statusCode == 200) {
-                    toast.success(`Create banner Success!`)
+                    toast.success(`Update banner Success!`)
                     resetFormik()
                     router.push("/banner")
                 } else {
-                    toast.warning(`Create banner Failed!`)
+                    toast.warning(`Update banner Failed!`)
                 }
                 setRefresh(!refresh)
             } catch (error) {
-                console.error("Error to login:", error);
+                console.error("Error update banner:", error);
             }
         }
     })

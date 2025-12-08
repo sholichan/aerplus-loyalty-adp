@@ -240,13 +240,13 @@ const OrderPage: React.FC = () => {
                                             {i.qty}
                                         </TableCell>
                                         <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            {i.amount}
+                                            Rp {i.amount.toLocaleString("id-ID")}
                                         </TableCell>
                                         <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            {i.total_amount}
+                                            Rp {i.total_amount.toLocaleString("id-ID")}
                                         </TableCell>
                                         <TableCell className="p-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                                            {i.total_benefit}
+                                            Rp {i.total_benefit.toLocaleString("id-ID")}
                                         </TableCell>
 
                                     </TableRow>
