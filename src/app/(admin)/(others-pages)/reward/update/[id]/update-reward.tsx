@@ -68,6 +68,7 @@ const UpdateReward: React.FC = () => {
                     });
                 }
             } catch (err) {
+                router.push('/reward')
                 toast.error("Failed to load reward data");
             } finally {
                 setIsLoading(false);
@@ -100,7 +101,7 @@ const UpdateReward: React.FC = () => {
             end_period: Yup.string().required("Wajib atur periode"),
         }),
         onSubmit: async (values, { resetForm }) => {
-            // setIsLoading(true)
+            setIsLoading(true)
             try {
                 const status = values.is_active ? "active" : "disable"
                 const submitValues = { ...values, status, uuid: rewardId }
@@ -259,7 +260,7 @@ const UpdateReward: React.FC = () => {
                                     <Label>About</Label>
 
                                     <div className="">
-                                        <MarkdownEditor onChange={(v) => {
+                                        <MarkdownEditor initialValue={formikReward.values.about} onChange={(v) => {
                                             formikReward.setFieldValue("about", v)
                                         }} />
                                     </div>
@@ -268,7 +269,7 @@ const UpdateReward: React.FC = () => {
                                     <Label>How to Use</Label>
 
                                     <div className="">
-                                        <MarkdownEditor onChange={(v) => {
+                                        <MarkdownEditor initialValue={formikReward.values.tutorial} onChange={(v) => {
                                             formikReward.setFieldValue("tutorial", v)
                                         }} />
                                     </div>
@@ -277,7 +278,7 @@ const UpdateReward: React.FC = () => {
                                     <Label>Terms and Conditions</Label>
 
                                     <div className="">
-                                        <MarkdownEditor onChange={(v) => {
+                                        <MarkdownEditor initialValue={formikReward.values.tnc} onChange={(v) => {
                                             formikReward.setFieldValue("tnc", v)
                                         }} />
                                     </div>

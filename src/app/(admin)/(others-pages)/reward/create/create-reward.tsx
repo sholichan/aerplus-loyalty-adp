@@ -208,7 +208,7 @@ const CreateReward: React.FC = () => {
                                     <Label>About</Label>
 
                                     <div className="">
-                                        <MarkdownEditor onChange={(v) => {
+                                        <MarkdownEditor initialValue={"Write about reward here"} onChange={(v) => {
                                             formikReward.setFieldValue("about", v)
                                         }} />
                                     </div>
@@ -217,7 +217,7 @@ const CreateReward: React.FC = () => {
                                     <Label>How to Use</Label>
 
                                     <div className="">
-                                        <MarkdownEditor onChange={(v) => {
+                                        <MarkdownEditor initialValue={"Write how to use voucher here"} onChange={(v) => {
                                             formikReward.setFieldValue("tutorial", v)
                                         }} />
                                     </div>
@@ -226,7 +226,7 @@ const CreateReward: React.FC = () => {
                                     <Label>Terms and Conditions</Label>
 
                                     <div className="">
-                                        <MarkdownEditor onChange={(v) => {
+                                        <MarkdownEditor initialValue={"Write terms and conditions voucher style here"} onChange={(v) => {
                                             formikReward.setFieldValue("tnc", v)
                                         }} />
                                     </div>
