@@ -15,6 +15,7 @@ type PropsType = {
   placeholder?: string;
   minDate?: DateOption; // <-- tambahin
   maxDate?: DateOption; // <-- tambahin
+  required?: boolean;
 };
 
 export default function DatePicker({
@@ -26,6 +27,7 @@ export default function DatePicker({
   placeholder,
   minDate,
   maxDate,
+  required = false,
 }: PropsType) {
   useEffect(() => {
     const flatPickr = flatpickr(`#${id}`, {
@@ -48,7 +50,12 @@ export default function DatePicker({
 
   return (
     <div>
-      {label && <Label htmlFor={id}>{label}</Label>}
+      {label && (
+        <Label htmlFor={id}>
+          {label}
+          {required && <span className="text-error-500 ml-1">*</span>}
+        </Label>
+      )}
 
       <div className="relative">
         <input

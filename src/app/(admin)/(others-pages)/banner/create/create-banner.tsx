@@ -105,9 +105,6 @@ const CreateBanner: React.FC = () => {
         formikCreateUpdate.setFieldValue("base64", "")
     }
 
-
-
-
     return (
         isLoading ?
             <PulseLoading /> :

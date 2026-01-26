@@ -10,13 +10,15 @@ import {
 interface TableBasicProps {
   header: string[];
   children: React.ReactNode;
+  isSetMinW?: string;
 }
 
-export default function TableBasic({ header, children }: TableBasicProps) {
+export default function TableBasic({ header, children, isSetMinW }: TableBasicProps) {
+  const minW = isSetMinW === 'none' ? "" : 'min-w-[1102px]'
   return (
     <div className="overflow-hidden border-b border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
-        <div className="min-w-[1102px]">
+        <div className={minW}>
           <Table>
             {/* Table Header */}
             <TableHeader className="border-b border-gray-100 dark:border-white/[0.05] capitalize">
