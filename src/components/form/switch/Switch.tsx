@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface SwitchProps {
   label: string;
@@ -26,6 +26,9 @@ const Switch: React.FC<SwitchProps> = ({
       onChange(newCheckedState);
     }
   };
+
+  console.info('isChecked', isChecked)
+  console.info('defaultChecked', defaultChecked)
 
   const switchColors =
     color === "blue"

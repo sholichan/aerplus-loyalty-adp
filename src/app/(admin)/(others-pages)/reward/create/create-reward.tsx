@@ -17,6 +17,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import * as Yup from 'yup';
+import { MapRewardPayload } from "@/utility/mapper";
 
 const CreateReward: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -47,6 +48,14 @@ const CreateReward: React.FC = () => {
             start_period: "",
             end_period: "",
             is_active: true,
+            // === conditional fields ===
+            discount_type: "",
+            discount_value: "",
+            bogo_product: "",
+            bogo_buy_qty: 1,
+            bogo_get_qty: 1,
+            merchandise_name: "",
+            merchandise_note: "",
         },
         validationSchema: Yup.object({
             name: Yup.string().required("Nama reward wajib diisi"),
@@ -58,8 +67,7 @@ const CreateReward: React.FC = () => {
         onSubmit: async (values, { resetForm }) => {
             setIsLoading(true)
             try {
-                const status = values.is_active ? "active" : "disable"
-                const submitValues = { ...values, status }
+                const payload = MapRewardPayload(values);
 
                 const response = await fetch(`${API_URL}admin/reward/create`, {
                     method: "POST",
@@ -67,7 +75,7 @@ const CreateReward: React.FC = () => {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${auth.token}`,
                     },
-                    body: JSON.stringify(submitValues),
+                    body: JSON.stringify(payload),
                 });
                 const res = await response.json();
                 if (res.statusCode == 200) {
@@ -83,7 +91,7 @@ const CreateReward: React.FC = () => {
             } finally {
                 setIsLoading(false);
             }
-        }
+        },
     })
 
     useEffect(() => {
@@ -103,6 +111,26 @@ const CreateReward: React.FC = () => {
         };
         reader.readAsDataURL(file);
     };
+
+    useEffect(() => {
+        const type = formikReward.values.type;
+
+        if (type !== "discount") {
+            formikReward.setFieldValue("discount", { type: "", value: "" });
+        }
+
+        if (type !== "bogo") {
+            formikReward.setFieldValue("bogo", {
+                product: "",
+                buy_qty: 1,
+                get_qty: 1,
+            });
+        }
+
+        if (type !== "merchandise") {
+            formikReward.setFieldValue("merchandise", { name: "", note: "" });
+        }
+    }, [formikReward.values.type]);
 
     const options = [
         { value: "discount", label: "Discount" },
@@ -158,6 +186,106 @@ const CreateReward: React.FC = () => {
                                         ) : null}
                                     </div>
                                 </div>
+
+                                {formikReward.values.type === "discount" && (
+                                    <div className="space-y-4">
+                                        <div>
+                                            <Label>Discount Type <RequiredSymbol /></Label>
+                                            <Select
+                                                options={[
+                                                    { value: "percentage", label: "Percentage (%)" },
+                                                    { value: "fixed", label: "Fixed Amount" },
+                                                ]}
+                                                placeholder="Select discount type"
+                                                onChange={(e) => {
+                                                    formikReward.setFieldValue("discount_type", e);
+                                                }}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <Label>
+                                                {formikReward.values.discount_type === "percentage"
+                                                    ? "Discount Percentage (%)"
+                                                    : "Discount Amount"}
+                                                <RequiredSymbol />
+                                            </Label>
+                                            <Input
+                                                type="number"
+                                                name="discount_value"
+                                                placeholder="0"
+                                                onChange={formikReward.handleChange}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                                {formikReward.values.type === "bogo" && (
+                                    <div className="space-y-4">
+                                        <div>
+                                            <Label>BOGO Product <RequiredSymbol /></Label>
+                                            <Select
+                                                options={[
+                                                    { value: "1", label: "Galon 15L" },
+                                                    { value: "2", label: "Galon 19L" },
+                                                    { value: "3", label: "Galon 21L" },
+                                                ]}
+                                                placeholder="Select product"
+                                                onChange={(e) =>
+                                                    formikReward.setFieldValue("bogo_product", e)
+                                                }
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <Label>Buy Qty <RequiredSymbol /></Label>
+                                                <Input
+                                                    type="number"
+                                                    min="1"
+                                                    name="bogo_buy_qty"
+                                                    onChange={formikReward.handleChange}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <Label>Get Qty <RequiredSymbol /></Label>
+                                                <Input
+                                                    type="number"
+                                                    min="1"
+                                                    name="bogo_get_qty"
+                                                    onChange={formikReward.handleChange}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {formikReward.values.type === "merchandise" && (
+                                    <div className="space-y-4">
+                                        <div>
+                                            <Label>Merchandise Name <RequiredSymbol /></Label>
+                                            <Input
+                                                name="merchandise_name"
+                                                type="text"
+                                                placeholder="ex: Tumbler Exclusive"
+                                                value={formikReward.values.merchandise_name}
+                                                onChange={formikReward.handleChange}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <Label>Merchandise Notes</Label>
+                                            <Input
+                                                name="merchandise_note"
+                                                type="text"
+                                                placeholder="ex: Color may vary, limited stock"
+                                                value={formikReward.values.merchandise_note}
+                                                onChange={formikReward.handleChange}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div>
                                     <Label>Points Required <RequiredSymbol /></Label>
                                     <Input

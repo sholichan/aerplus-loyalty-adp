@@ -17,6 +17,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import * as Yup from 'yup';
+import { MapRewardPayload } from "@/utility/mapper";
 
 const UpdateReward: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -65,6 +66,13 @@ const UpdateReward: React.FC = () => {
                         start_period: data.start_period ?? "",
                         end_period: data.end_period ?? "",
                         is_active: data.status === "active",
+                        discount_type: data.detail.discount_type ?? "",
+                        discount_value: data.detail.discount_value ?? "",
+                        bogo_product: data.detail.product ?? "",
+                        bogo_buy_qty: data.detail.buy_qty ?? 1,
+                        bogo_get_qty: data.detail.get_qty ?? 1,
+                        merchandise_name: data.detail.name ?? "",
+                        merchandise_note: data.detail.note ?? "",
                     });
                 }
             } catch (err) {
@@ -92,7 +100,15 @@ const UpdateReward: React.FC = () => {
             image: "",
             start_period: "",
             end_period: "",
-            is_active: true,
+            is_active: "",
+            // === conditional fields ===
+            discount_type: "",
+            discount_value: "",
+            bogo_product: "",
+            bogo_buy_qty: 1,
+            bogo_get_qty: 1,
+            merchandise_name: "",
+            merchandise_note: "",
         },
         validationSchema: Yup.object({
             name: Yup.string().required("Nama reward wajib diisi"),
@@ -103,9 +119,8 @@ const UpdateReward: React.FC = () => {
         onSubmit: async (values, { resetForm }) => {
             setIsLoading(true)
             try {
-                const status = values.is_active ? "active" : "disable"
-                const submitValues = { ...values, status, uuid: rewardId }
-                console.log('submitValues', submitValues)
+                const payload = MapRewardPayload(values);
+                const submitValues = { ...payload, uuid: rewardId }
 
                 const response = await fetch(
                     `${API_URL}admin/reward/update`,
@@ -153,6 +168,26 @@ const UpdateReward: React.FC = () => {
         };
         reader.readAsDataURL(file);
     };
+
+    useEffect(() => {
+        const type = formikReward.values.type;
+
+        if (type !== "discount") {
+            formikReward.setFieldValue("discount", { type: "", value: "" });
+        }
+
+        if (type !== "bogo") {
+            formikReward.setFieldValue("bogo", {
+                product: "",
+                buy_qty: 1,
+                get_qty: 1,
+            });
+        }
+
+        if (type !== "merchandise") {
+            formikReward.setFieldValue("merchandise", { name: "", note: "" });
+        }
+    }, [formikReward.values.type]);
 
     const options = [
         { value: "discount", label: "Discount" },
@@ -210,6 +245,111 @@ const UpdateReward: React.FC = () => {
                                         ) : null}
                                     </div>
                                 </div>
+
+                                {formikReward.values.type === "discount" && (
+                                    <div className="space-y-4">
+                                        <div>
+                                            <Label>Discount Type <RequiredSymbol /></Label>
+                                            <Select
+                                                options={[
+                                                    { value: "percentage", label: "Percentage (%)" },
+                                                    { value: "fixed", label: "Fixed Amount" },
+                                                ]}
+                                                placeholder="Select discount type"
+                                                onChange={(e) => {
+                                                    formikReward.setFieldValue("discount_type", e);
+                                                }}
+                                                value={formikReward.values.discount_type ?? ""}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <Label>
+                                                {formikReward.values.discount_type === "percentage"
+                                                    ? "Discount Percentage (%)"
+                                                    : "Discount Amount"}
+                                                <RequiredSymbol />
+                                            </Label>
+                                            <Input
+                                                type="number"
+                                                name="discount_value"
+                                                placeholder="0"
+                                                onChange={formikReward.handleChange}
+                                                value={formikReward.values.discount_value ?? 0}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                                {formikReward.values.type === "bogo" && (
+                                    <div className="space-y-4">
+                                        <div>
+                                            <Label>BOGO Product <RequiredSymbol /></Label>
+                                            <Select
+                                                options={[
+                                                    { value: "1", label: "Galon 15L" },
+                                                    { value: "2", label: "Galon 19L" },
+                                                    { value: "3", label: "Galon 21L" },
+                                                ]}
+                                                placeholder="Select product"
+                                                onChange={(e) =>
+                                                    formikReward.setFieldValue("bogo_product", e)
+                                                }
+                                                value={formikReward.values.bogo_product ?? ""}
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <Label>Buy Qty <RequiredSymbol /></Label>
+                                                <Input
+                                                    type="number"
+                                                    min="1"
+                                                    name="bogo_buy_qty"
+                                                    onChange={formikReward.handleChange}
+                                                    value={formikReward.values.bogo_buy_qty ?? 0}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <Label>Get Qty <RequiredSymbol /></Label>
+                                                <Input
+                                                    type="number"
+                                                    min="1"
+                                                    name="bogo_get_qty"
+                                                    onChange={formikReward.handleChange}
+                                                    value={formikReward.values.bogo_get_qty ?? 0}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {formikReward.values.type === "merchandise" && (
+                                    <div className="space-y-4">
+                                        <div>
+                                            <Label>Merchandise Name <RequiredSymbol /></Label>
+                                            <Input
+                                                name="merchandise_name"
+                                                type="text"
+                                                placeholder="ex: Tumbler Exclusive"
+                                                value={formikReward.values.merchandise_name}
+                                                onChange={formikReward.handleChange}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <Label>Merchandise Notes</Label>
+                                            <Input
+                                                name="merchandise_note"
+                                                type="text"
+                                                placeholder="ex: Color may vary, limited stock"
+                                                value={formikReward.values.merchandise_note}
+                                                onChange={formikReward.handleChange}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div>
                                     <Label>Points Required <RequiredSymbol /></Label>
                                     <Input
@@ -323,7 +463,11 @@ const UpdateReward: React.FC = () => {
                                         <div className="mt-3">
                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img
-                                                src={formikReward.values.image}
+                                                src={
+                                                    formikReward.values.image.substring(0, 4) === 'data'
+                                                        ? formikReward.values.image
+                                                        : API_URL?.replaceAll('/api/', '') + formikReward.values.image
+                                                }
                                                 alt="Preview"
                                                 className="w-full h-1/4 rounded-lg border"
                                             />
@@ -338,12 +482,14 @@ const UpdateReward: React.FC = () => {
                                     <Label>
                                         Reward Status
                                     </Label>
-                                    <Switch
-                                        label={formikReward.values.is_active ? "Active" : "Disable"}
-                                        defaultChecked={true}
-                                        onChange={() =>
-                                            formikReward.setFieldValue("is_active", !formikReward.values.is_active)}
-                                    />
+                                    {formikReward.values.is_active === '' ? '-' : (
+                                        <Switch
+                                            label={formikReward.values.is_active ? "Active" : "Inactive"}
+                                            defaultChecked={formikReward.values.is_active}
+                                            onChange={() =>
+                                                formikReward.setFieldValue("is_active", !formikReward.values.is_active)}
+                                        />
+                                    )}
                                 </div>
                                 <Button
                                     className="w-full"
