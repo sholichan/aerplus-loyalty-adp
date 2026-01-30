@@ -27,9 +27,6 @@ const Switch: React.FC<SwitchProps> = ({
     }
   };
 
-  console.info('isChecked', isChecked)
-  console.info('defaultChecked', defaultChecked)
-
   const switchColors =
     color === "blue"
       ? {

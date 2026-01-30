@@ -18,10 +18,12 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import * as Yup from 'yup';
 import { MapRewardPayload } from "@/utility/mapper";
+import { GetProduct } from "@/utility/fetcher";
 
 const CreateReward: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [dragActive, setDragActive] = useState(false);
+    const [bogoOptions, setBogoOptions] = useState([]);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const lastSubmit = useRef(0);
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -33,6 +35,18 @@ const CreateReward: React.FC = () => {
             router.push("/signin")
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
+
+        const fetchProduct = async () => {
+            const products = await GetProduct(auth.token as string)
+            setBogoOptions(products.map((product: any) => {
+                return {
+                    value: product.id,
+                    label: `${product.number} - ${product.name}`,
+                }
+            }))
+        }
+
+        fetchProduct()
     }, [auth.token, router])
 
     const formikReward = useFormik({
@@ -116,23 +130,24 @@ const CreateReward: React.FC = () => {
         const type = formikReward.values.type;
 
         if (type !== "discount") {
-            formikReward.setFieldValue("discount", { type: "", value: "" });
+            formikReward.setFieldValue("discount_type", "");
+            formikReward.setFieldValue("discount_value", "");
         }
 
         if (type !== "bogo") {
-            formikReward.setFieldValue("bogo", {
-                product: "",
-                buy_qty: 1,
-                get_qty: 1,
-            });
+            formikReward.setFieldValue("bogo_product", "");
+            formikReward.setFieldValue("bogo_buy_qty", 1);
+            formikReward.setFieldValue("bogo_get_qty", 1);
         }
 
         if (type !== "merchandise") {
             formikReward.setFieldValue("merchandise", { name: "", note: "" });
+            formikReward.setFieldValue("merchandise_name", "");
+            formikReward.setFieldValue("merchandise_note", "");
         }
     }, [formikReward.values.type]);
 
-    const options = [
+    const rewardTypeOptions = [
         { value: "discount", label: "Discount" },
         { value: "bogo", label: "BOGO (ex: buy 1 get 1)" },
         { value: "merchandise", label: "Merchandise" },
@@ -172,7 +187,7 @@ const CreateReward: React.FC = () => {
                                     <Label>Reward Type <RequiredSymbol /></Label>
                                     <div className="relative">
                                         <Select
-                                            options={options}
+                                            options={rewardTypeOptions}
                                             placeholder="Select an option"
                                             className="dark:bg-dark-900"
                                             onChange={(e) => {
@@ -224,11 +239,7 @@ const CreateReward: React.FC = () => {
                                         <div>
                                             <Label>BOGO Product <RequiredSymbol /></Label>
                                             <Select
-                                                options={[
-                                                    { value: "1", label: "Galon 15L" },
-                                                    { value: "2", label: "Galon 19L" },
-                                                    { value: "3", label: "Galon 21L" },
-                                                ]}
+                                                options={bogoOptions}
                                                 placeholder="Select product"
                                                 onChange={(e) =>
                                                     formikReward.setFieldValue("bogo_product", e)

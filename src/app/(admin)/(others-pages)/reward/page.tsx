@@ -172,7 +172,7 @@ const RewardPage: React.FC = () => {
                             </TableCell>
                             <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">{r.type}</TableCell>
                             <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">{r.point_eligibility}</TableCell>
-                            <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                            <TableCell className={r.status === 'active' ? "p-3 text-green-500 text-start text-theme-sm dark:text-green-400" : "p-3 text-red-500 text-start text-theme-sm dark:text-green-400"}>
                                 {r.status === "active" ? "Active" : "Inactive"}
                             </TableCell>
                             <TableCell className="p-3 text-theme-sm  text-gray-500 dark:text-gray-400">
