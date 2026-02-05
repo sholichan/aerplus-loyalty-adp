@@ -14,6 +14,7 @@ import { clearToken } from "@/store/slices/authSlices";
 import { toast } from "react-toastify";
 import { CiEdit } from "react-icons/ci";
 import dayjs from "dayjs";
+import { getRewardTypeBadge } from "@/utility/mapper"
 
 type RewardType = {
     id: number;
@@ -162,36 +163,43 @@ const RewardPage: React.FC = () => {
             {/* Table */}
             <div className="p-4 border-t sm:p-6">
                 <TableBasic header={header} isSetMinW="none">
-                    {tableData.map((r, index) => (
-                        <TableRow key={r.uuid}>
-                            <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                {(currentPage - 1) * 10 + (index + 1)}
-                            </TableCell>
-                            <TableCell className="p-3 text-blue-500 text-start text-theme-sm dark:text-blue-400">
-                                <a href={API_URL?.replaceAll('/api/', '') + r.image} target="_blank">{r.name}</a>
-                            </TableCell>
-                            <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">{r.type}</TableCell>
-                            <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">{r.point_eligibility}</TableCell>
-                            <TableCell className={r.status === 'active' ? "p-3 text-green-500 text-start text-theme-sm dark:text-green-400" : "p-3 text-red-500 text-start text-theme-sm dark:text-green-400"}>
-                                {r.status === "active" ? "Active" : "Inactive"}
-                            </TableCell>
-                            <TableCell className="p-3 text-theme-sm  text-gray-500 dark:text-gray-400">
-                                <div className="rounded-sm">
-                                    <span className="block text-theme-sm">
-                                        {dateConvert(r.created_at)}
-                                    </span>
-                                    <span className="block text-theme-xs">
-                                        {timeConvert(r.created_at)}
-                                    </span>
-                                </div>
-                            </TableCell>
-                            <TableCell className="p-3 text-theme-sm  text-gray-500 dark:text-gray-400">
-                                <Button size="sm" onClick={() => router.push(`/reward/update/${r.uuid}`)} variant="primary">
-                                    <CiEdit />
-                                </Button>
-                            </TableCell>
-                        </TableRow>
-                    ))}
+                    {
+                    tableData.map((r, index) => {
+                        const badge = getRewardTypeBadge(r.type);
+
+                        return (
+                            <TableRow key={r.uuid}>
+                                <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                    {(currentPage - 1) * 10 + (index + 1)}
+                                </TableCell>
+                                <TableCell className="p-3 text-blue-500 text-start text-theme-sm dark:text-blue-400">
+                                    <a href={API_URL?.replaceAll('/api/', '') + r.image} target="_blank">{r.name}</a>
+                                </TableCell>
+                                <TableCell className={`p-3 ${badge.color} text-start text-theme-sm dark:text-gray-400`}>{badge.label}</TableCell>
+                                <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400"><b>{r.point_eligibility}</b></TableCell>
+                                <TableCell className={r.status === 'active' ? "p-3 text-green-500 text-start text-theme-sm dark:text-green-400" : "p-3 text-red-500 text-start text-theme-sm dark:text-green-400"}>
+                                    {r.status === "active" ? "Active" : "Inactive"}
+                                </TableCell>
+                                <TableCell className="p-3 text-theme-sm  text-gray-500 dark:text-gray-400">
+                                    <div className="rounded-sm">
+                                        <span className="block text-theme-sm">
+                                            {dateConvert(r.created_at)}
+                                        </span>
+                                        <span className="block text-theme-xs">
+                                            {timeConvert(r.created_at)}
+                                        </span>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="p-3 text-theme-sm  text-gray-500 dark:text-gray-400">
+                                    <Button size="sm" onClick={() => router.push(`/reward/update/${r.uuid}`)} variant="primary">
+                                        <CiEdit />
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        )
+                    })
+                }
+                
                 </TableBasic>
 
                 <div className="flex justify-end mt-4">

@@ -68,8 +68,7 @@ const CreateReward: React.FC = () => {
             bogo_product: "",
             bogo_buy_qty: 1,
             bogo_get_qty: 1,
-            merchandise_name: "",
-            merchandise_note: "",
+            merchandise_id: "",
         },
         validationSchema: Yup.object({
             name: Yup.string().required("Nama reward wajib diisi"),
@@ -141,9 +140,7 @@ const CreateReward: React.FC = () => {
         }
 
         if (type !== "merchandise") {
-            formikReward.setFieldValue("merchandise", { name: "", note: "" });
-            formikReward.setFieldValue("merchandise_name", "");
-            formikReward.setFieldValue("merchandise_note", "");
+            formikReward.setFieldValue("merchandise_id", "");
         }
     }, [formikReward.values.type]);
 
@@ -252,7 +249,7 @@ const CreateReward: React.FC = () => {
                                                 <Label>Buy Qty <RequiredSymbol /></Label>
                                                 <Input
                                                     type="number"
-                                                    min="1"
+                                                    min="0"
                                                     name="bogo_buy_qty"
                                                     onChange={formikReward.handleChange}
                                                 />
@@ -274,24 +271,13 @@ const CreateReward: React.FC = () => {
                                 {formikReward.values.type === "merchandise" && (
                                     <div className="space-y-4">
                                         <div>
-                                            <Label>Merchandise Name <RequiredSymbol /></Label>
-                                            <Input
-                                                name="merchandise_name"
-                                                type="text"
-                                                placeholder="ex: Tumbler Exclusive"
-                                                value={formikReward.values.merchandise_name}
-                                                onChange={formikReward.handleChange}
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <Label>Merchandise Notes</Label>
-                                            <Input
-                                                name="merchandise_note"
-                                                type="text"
-                                                placeholder="ex: Color may vary, limited stock"
-                                                value={formikReward.values.merchandise_note}
-                                                onChange={formikReward.handleChange}
+                                            <Label>Merchandise Product<RequiredSymbol /></Label>
+                                            <Select
+                                                options={bogoOptions}
+                                                placeholder="Select product"
+                                                onChange={(e) =>
+                                                    formikReward.setFieldValue("merchandise_id", e)
+                                                }
                                             />
                                         </div>
                                     </div>

@@ -27,7 +27,7 @@ export function MapRewardPayload (values: any) {
             return {
                 ...basePayload,
                 detail: {
-                    product: values.bogo_product,
+                    product_id: values.bogo_product,
                     buy_qty: Number(values.bogo_buy_qty),
                     get_qty: Number(values.bogo_get_qty),
                 },
@@ -37,8 +37,7 @@ export function MapRewardPayload (values: any) {
             return {
                 ...basePayload,
                 detail: {
-                    name: values.merchandise_name,
-                    note: values.merchandise_note || null,
+                    product_id: values.merchandise_id,
                 },
             };
 
@@ -46,3 +45,31 @@ export function MapRewardPayload (values: any) {
             throw new Error("Invalid reward type");
     }
 };
+
+export function getRewardTypeBadge(type: string) {
+    switch (type) {
+        case "discount":
+            return {
+                label: "Discount",
+                color: "text-blue-700",
+            };
+
+        case "bogo":
+            return {
+                label: "BOGO",
+                color: "text-green-700",
+            };
+
+        case "merchandise":
+            return {
+                label: "Merchandise",
+                color: "text-amber-800",
+            };
+
+        default:
+            return {
+                label: "Unknown",
+                color: "text-gray-700",
+            };
+    }
+}

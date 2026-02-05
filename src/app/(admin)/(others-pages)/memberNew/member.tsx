@@ -20,6 +20,8 @@ export interface Order {
     price: number;
     total_amount: number;
     total_benefit: number;
+    redeem_code: string;
+    is_void: boolean;
     created_at: string;
 }
 
@@ -381,7 +383,7 @@ export default function UserOrderTable() {
                                                                                 "Qty",
                                                                                 "Price",
                                                                                 "Total",
-                                                                                "Discount",
+                                                                                "Redeem Code",
                                                                                 "Date",
                                                                             ].map((h) => (
                                                                                 <th
@@ -397,7 +399,7 @@ export default function UserOrderTable() {
                                                                         {user.orders.map((order, index) => (
                                                                             <tr
                                                                                 key={order.id}
-                                                                                className="hover:bg-gray-50 dark:hover:bg-gray-900"
+                                                                                className={order.is_void ? "bg-rose-100 hover:bg-gray-50 dark:hover:bg-gray-900" : "hover:bg-gray-50 dark:hover:bg-gray-900"}
                                                                             >
                                                                                 <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-400">
                                                                                     {index + 1}
@@ -423,10 +425,8 @@ export default function UserOrderTable() {
                                                                                     Rp {order.total_amount.toLocaleString("id-ID")}
                                                                                 </td>
                                                                                 <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-                                                                                    {order.total_benefit > 0 ? (
-                                                                                        <span className="text-green-600 dark:text-green-400 font-medium">
-                                                                                            Rp {order.total_benefit.toLocaleString("id-ID")}
-                                                                                        </span>
+                                                                                    {order.redeem_code !== "" ? (
+                                                                                        <b>{order.redeem_code}</b>
                                                                                     ) : (
                                                                                         "-"
                                                                                     )}
