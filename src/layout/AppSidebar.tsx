@@ -12,6 +12,8 @@ import { PiFlagBannerFold } from "react-icons/pi";
 import { useSidebar } from "../context/SidebarContext";
 import { BsShopWindow } from "react-icons/bs";
 import { IoSettingsOutline } from "react-icons/io5";
+import { FaGift } from "react-icons/fa";
+
 import {
   ChevronDownIcon,
   GridIcon,
@@ -34,14 +36,24 @@ const navItems: NavItem[] = [
   },
   {
     icon: <BsPeople size={20} />,
-    name: "Members",
+    name: "Member New",
     path: "/memberNew",
   },
   // {
-  //   icon: <HiOutlineReceiptPercent size={20} />,
+  //   icon: <BsPeople size={20} />,
+  //   name: "Member",
+  //   path: "/member",
+  // },
+  // {
+  //   icon: <BsPeople size={20} />,
   //   name: "Vouchers",
   //   path: "/voucher",
   // },
+  {
+    icon: <FaGift size={20} />,
+    name: "Rewards",
+    path: "/reward",
+  },
   {
     icon: <FiShoppingCart size={20} />,
     name: "Orders",
@@ -92,11 +104,11 @@ const navItems: NavItem[] = [
 ];
 
 const othersItems: NavItem[] = [
-  // {
-  //   icon: <BiCoinStack size={20} />,
-  //   name: "Point",
-  //   path: "/point",
-  // },
+  {
+    icon: <BiCoinStack size={20} />,
+    name: "Point",
+    path: "/point",
+  },
   {
     icon: <BiCoinStack size={20} />,
     name: "Benefit",
