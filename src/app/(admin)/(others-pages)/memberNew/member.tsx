@@ -1,9 +1,14 @@
 "use client";
 import { PulseLoading } from "@/components/common/loading";
 import Input from "@/components/form/input/InputField";
+import { useModal } from "@/hooks/useModal";
+import { Modal } from "@/components/ui/modal";
 import Pagination from "@/components/tables/Pagination";
+import Button from "@/components/ui/button/Button";
+import Label from "@/components/form/Label";
 import { useOutlet } from "@/context/OutletContext";
 import { ChevronDownIcon } from "@/icons";
+import { PlusIcon } from "@/icons"
 import { RootState } from "@/store";
 import { clearToken } from "@/store/slices/authSlices";
 import dayjs from "dayjs";
@@ -11,6 +16,7 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import RequiredSymbol from "@/components/common/RequiredSymbol";
 
 export interface Order {
     id: string;
@@ -49,6 +55,11 @@ export default function UserOrderTable() {
     const router = useRouter();
     const auth = useSelector((state: RootState) => state.auth);
     const { selectedOutlet } = useOutlet();
+    const { isOpen, openModal, closeModal } = useModal();
+
+    const [injectPoin, setInjectPoin] = useState<string>("");
+    const [memberId, setMemberId] = useState<string | null>(null);
+    const [disableAddPoin, setDisableAddPoin] = useState<boolean>(false);
 
     const [tableData, setTableData] = useState<NewUserType[]>([]);
     const [tableDataToCsv, setTableDataToCsv] = useState<NewUserType[]>([]);
@@ -93,34 +104,61 @@ export default function UserOrderTable() {
         }
 
         if (auth.token) {
-            const fetchUsers = async () => {
-                try {
-                    const response = await fetch(
-                        `${API_URL}/admin/user/get-all?search=${search}&outletId=${selectedOutlet}&page=${currentPage}&limit=10`,
-                        {
-                            method: "GET",
-                            headers: {
-                                "Content-Type": "application/json",
-                                Authorization: `Bearer ${auth.token}`,
-                            },
-                        }
-                    );
-
-                    const res = await response.json();
-                    if (res.statusCode === 200) {
-                        setTableData(res.data.users);
-                        setTotalPages(res.data.totalPages);
-                        setTotalItems(res.data.totalItems);
-                    }
-                } catch (error) {
-                    console.error("Error fetching users:", error);
-                }
-                setIsLoading(false);
-            };
             fetchUsers();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [refresh, currentPage, searchButton, selectedOutlet]);
+
+    const fetchUsers = async () => {
+        try {
+            const response = await fetch(
+                `${API_URL}/admin/user/get-all?search=${search}&outletId=${selectedOutlet}&page=${currentPage}&limit=10`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${auth.token}`,
+                    },
+                }
+            );
+
+            const res = await response.json();
+            if (res.statusCode === 200) {
+                setTableData(res.data.users);
+                setTotalPages(res.data.totalPages);
+                setTotalItems(res.data.totalItems);
+            }
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
+        setIsLoading(false);
+    };
+
+
+    const handleInjectPoint = async () => {
+        if (injectPoin) {
+            setDisableAddPoin(true)
+
+            await fetch(
+                `${API_URL}/point/debug/inject-point`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${auth.token}`,
+                    },
+                    body: JSON.stringify({
+                        "user_id": memberId,
+                        "points": Number(injectPoin)
+                    }),
+                }
+            );
+
+            toast.success("Points added successfully!");
+            fetchUsers();
+            closeModal();
+        }
+    };
 
     useEffect(() => {
         const fetchMemberToCsv = async () => {
@@ -352,7 +390,13 @@ export default function UserOrderTable() {
                                                                 </span>{" "}
                                                                 <span className="font-medium">
                                                                     {user.total_point ?? "-"}
-                                                                </span>
+                                                                </span>{" "}
+                                                                <Button size="xs" onClick={() => {
+                                                                    openModal()
+                                                                    setInjectPoin("")
+                                                                    setMemberId(user.id)
+                                                                    setDisableAddPoin(false)
+                                                                }} variant="primary"><PlusIcon /></Button>
                                                             </div>
                                                             <div>
                                                                 <span className="text-gray-500 dark:text-gray-400">
@@ -462,6 +506,37 @@ export default function UserOrderTable() {
                     onPageChange={handlePaginationChange}
                 />
             </div>
+            <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
+                <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+                    <div className="px-2 pr-14">
+                        <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+                            Inject Point
+                        </h4>
+                    </div>
+                    <div className="flex flex-col">
+                        <Label>Point <RequiredSymbol /></Label>
+                        <Input
+                            name="point"
+                            type="number"
+                            min="0"
+                            placeholder="Point"
+                            value={injectPoin}
+                            onChange={(e) => {
+                                setInjectPoin(e.target.value)
+                            }}
+                        />
+                        <div className="text-sm text-red-500">Point amount is required</div>
+                    </div>
+                    <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+                        <Button size="sm" variant="outline" onClick={closeModal}>
+                            Close
+                        </Button>
+                        <Button size="sm" type="button" disabled={disableAddPoin} onClick={handleInjectPoint}>
+                            {disableAddPoin ? 'Loading...' : 'Add Poin'}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }
