@@ -394,30 +394,33 @@ const UpdateReward: React.FC = () => {
                                 </div>
                                 <div>
                                     <Label>About</Label>
-
-                                    <div className="">
-                                        <MarkdownEditor initialValue={formikReward.values.about} onChange={(v) => {
-                                            formikReward.setFieldValue("about", v)
-                                        }} />
-                                    </div>
+                                    {formikReward.values.about && (
+                                        <div className="">
+                                            <MarkdownEditor initialValue={formikReward.values.about} onChange={(v) => {
+                                                formikReward.setFieldValue("about", v)
+                                            }} />
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
                                     <Label>How to Use</Label>
-
-                                    <div className="">
-                                        <MarkdownEditor initialValue={formikReward.values.tutorial} onChange={(v) => {
-                                            formikReward.setFieldValue("tutorial", v)
-                                        }} />
-                                    </div>
+                                    {formikReward.values.tutorial && (
+                                        <div className="">
+                                            <MarkdownEditor initialValue={formikReward.values.tutorial} onChange={(v) => {
+                                                formikReward.setFieldValue("tutorial", v)
+                                            }} />
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
                                     <Label>Terms and Conditions</Label>
-
-                                    <div className="">
-                                        <MarkdownEditor initialValue={formikReward.values.tnc} onChange={(v) => {
-                                            formikReward.setFieldValue("tnc", v)
-                                        }} />
-                                    </div>
+                                    {formikReward.values.tnc && (
+                                        <div className="">
+                                            <MarkdownEditor initialValue={formikReward.values.tnc} onChange={(v) => {
+                                                formikReward.setFieldValue("tnc", v)
+                                            }} />
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
                                     <Label>
