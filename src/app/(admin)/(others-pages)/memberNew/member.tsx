@@ -47,7 +47,7 @@ export interface NewUserType {
     outlet?: LocationInfo;
     province?: LocationInfo;
     city?: LocationInfo;
-    orders: Order[];
+    order_count: number;
 }
 
 export default function UserOrderTable() {
@@ -61,6 +61,7 @@ export default function UserOrderTable() {
     const [memberId, setMemberId] = useState<string | null>(null);
     const [disableAddPoin, setDisableAddPoin] = useState<boolean>(false);
 
+    const [orders, setOrders] = useState<Order[]>([]);
     const [tableData, setTableData] = useState<NewUserType[]>([]);
     const [tableDataToCsv, setTableDataToCsv] = useState<NewUserType[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -72,10 +73,12 @@ export default function UserOrderTable() {
     const [searchButton, setSearchButton] = useState<boolean>(false);
     const [prevSelOutlet, setPrevSelOutlet] = useState<string>("");
     const [openRow, setOpenRow] = useState<string | null>(null);
+    const [getOrderLoading, setGetOrderLoading] = useState<boolean>(false);
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-    const toggleRow = (id: string) => {
+    const toggleRow = async (id: string) => {
+        fetchOrdersByUser(id);
         setOpenRow(openRow === id ? null : id);
     };
 
@@ -134,6 +137,30 @@ export default function UserOrderTable() {
         setIsLoading(false);
     };
 
+    const fetchOrdersByUser = async (id: string) => {
+        try {
+            setGetOrderLoading(true);
+            const response = await fetch(
+                `${API_URL}/admin/order/list/user/${id}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${auth.token}`,
+                    },
+                }
+            );
+
+            const res = await response.json();
+            if (res.statusCode === 200) {
+                setGetOrderLoading(false);
+                setOrders(res.data)
+            }
+
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
+    }
 
     const handleInjectPoint = async () => {
         if (injectPoin) {
@@ -312,7 +339,7 @@ export default function UserOrderTable() {
 
                     <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
                         {tableData.map((user, index) => {
-                            const isOpen = openRow === user.id;
+                            const isOpenRow = openRow === user.id;
 
                             return (
                                 <React.Fragment key={user.id}>
@@ -335,12 +362,12 @@ export default function UserOrderTable() {
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <span
-                                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${user.orders?.length > 0
+                                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${user.order_count > 0
                                                     ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
                                                     : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
                                                     }`}
                                             >
-                                                {user.orders?.length || 0}
+                                                {user.order_count}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
@@ -355,14 +382,14 @@ export default function UserOrderTable() {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <ChevronDownIcon
-                                                className={`w-5 h-5 text-gray-400 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+                                                className={`w-5 h-5 text-gray-400 transform transition-transform duration-200 ${isOpenRow ? "rotate-180" : ""
                                                     }`}
                                             />
                                         </td>
                                     </tr>
 
                                     {/* Accordion Row */}
-                                    {isOpen && (
+                                    {isOpenRow && (
                                         <tr className="bg-gray-50 dark:bg-gray-800">
                                             <td colSpan={7} className="p-0">
                                                 <div className="border-t border-gray-200 dark:border-gray-700 bg-blue-100 dark:bg-blue-900 px-6 py-6 space-y-6">
@@ -414,8 +441,8 @@ export default function UserOrderTable() {
                                                         <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                                                             Order History
                                                         </h4>
-
-                                                        {user.orders?.length > 0 ? (
+                                                        {getOrderLoading && <PulseLoading />}
+                                                        {(!getOrderLoading && orders?.length > 0) && (
                                                             <div className="overflow-x-auto">
                                                                 <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
                                                                     <thead className="bg-gray-100 dark:bg-gray-700">
@@ -440,7 +467,7 @@ export default function UserOrderTable() {
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                                                                        {user.orders.map((order, index) => (
+                                                                        {orders.map((order, index) => (
                                                                             <tr
                                                                                 key={order.id}
                                                                                 className={order.is_void ? "bg-rose-100 hover:bg-gray-50 dark:hover:bg-gray-900" : "hover:bg-gray-50 dark:hover:bg-gray-900"}
@@ -483,7 +510,8 @@ export default function UserOrderTable() {
                                                                     </tbody>
                                                                 </table>
                                                             </div>
-                                                        ) : (
+                                                        )}
+                                                        {(!getOrderLoading && orders?.length === 0) && (
                                                             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                                                                 No order history
                                                             </div>
