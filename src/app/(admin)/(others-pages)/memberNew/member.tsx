@@ -54,13 +54,11 @@ export default function UserOrderTable() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [redeems, setRedeems] = useState<Redeem[]>([]);
     const [tableData, setTableData] = useState<NewUserType[]>([]);
-    const [tableDataToCsv, setTableDataToCsv] = useState<NewUserType[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [refresh, setRefresh] = useState<boolean>(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [totalPages, setTotalPages] = useState(10);
-    const [totalItems, setTotalItems] = useState(0);
     const [search, setSearch] = useState<string>("");
     const [searchButton, setSearchButton] = useState<boolean>(false);
     const [prevSelOutlet, setPrevSelOutlet] = useState<string>("");
@@ -135,7 +133,6 @@ export default function UserOrderTable() {
             if (res.statusCode === 200) {
                 setTableData(res.data.users);
                 setTotalPages(res.data.totalPages);
-                setTotalItems(res.data.totalItems);
             }
         } catch (error) {
             console.error("Error fetching users:", error);
@@ -214,33 +211,6 @@ export default function UserOrderTable() {
         }
     };
 
-    useEffect(() => {
-        const fetchMemberToCsv = async () => {
-            try {
-                const response = await fetch(
-                    `${API_URL}/admin/user/get-all?search=&outletId=${selectedOutlet}&page=1&limit=${totalItems}`,
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${auth.token}`,
-                        },
-                    }
-                );
-                const res = await response.json();
-
-                if (res.statusCode === 200) {
-                    setTableDataToCsv(res.data.users);
-                }
-            } catch (error) {
-                console.error("Error fetching vouchers:", error);
-            }
-            setIsLoading(false);
-        };
-        fetchMemberToCsv();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedOutlet, totalItems]);
-
     const handlePaginationChange = (page: number, limit: number) => {
         setIsLoading(true);
         setCurrentPage(page);
@@ -251,7 +221,7 @@ export default function UserOrderTable() {
     const exportToCSV = () => {
         const rows = [
             header,
-            ...tableDataToCsv.map((i, index) => [
+            ...tableData.map((i, index) => [
                 (currentPage - 1) * 10 + (index + 1),
                 i.user_name,
                 i.phone_number,
@@ -270,7 +240,7 @@ export default function UserOrderTable() {
 
         const link = document.createElement("a");
         link.href = encodeURI(csvContent);
-        link.setAttribute("download", `members-${selectedOutlet !== "" ? tableDataToCsv[0]?.outlet?.name : "all"}.csv`);
+        link.setAttribute("download", `members-${selectedOutlet !== "" ? tableData[0]?.outlet?.name : "all"}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
