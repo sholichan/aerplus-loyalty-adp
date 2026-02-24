@@ -87,7 +87,11 @@ export const UserOrderHistory: React.FC<UserOrderHistoryProps> = ({ orders }) =>
                                         {order.point}
                                     </td>
                                     <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-                                        {new Date(order.created_at).toLocaleDateString("en-GB")}
+                                        {
+                                            new Date(order.created_at).toLocaleDateString("en-GB")
+                                            + "\n" +
+                                            new Date(order.created_at).toLocaleTimeString("en-GB")
+                                        }
                                     </td>
                                 </tr>
                             ))}
