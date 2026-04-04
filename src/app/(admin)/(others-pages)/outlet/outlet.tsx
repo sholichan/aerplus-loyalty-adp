@@ -9,12 +9,16 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { RootState } from "@/store";
 import { OutletType } from "@/utility/types";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
 import { useDispatch } from "react-redux";
 import { clearToken } from "@/store/slices/authSlices";
+import { Modal } from "@/components/ui/modal";
+import { useModal } from "@/hooks/useModal";
+import { BiQr } from "react-icons/bi";
+import { QRCodeCanvas } from "qrcode.react";
 
 
 const Outlet: React.FC = () => {
@@ -29,6 +33,10 @@ const Outlet: React.FC = () => {
     const [totalPages, setTotalPages] = useState(10);
     const [search, setSearch] = useState<string>("")
     const [searchButton, setSearchButton] = useState<boolean>(false)
+    const [selectedOutlet, setSelectedOutlet] = useState<OutletType | null>(null)
+    const qrContainerRef = useRef<HTMLDivElement>(null)
+    const { isOpen, openModal, closeModal } = useModal();
+
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -79,6 +87,63 @@ const Outlet: React.FC = () => {
         setCurrentPage(page);
     };
 
+    const handleOpenQrModal = (outlet: OutletType) => {
+        setSelectedOutlet(outlet)
+        openModal()
+    }
+
+    const handleCloseQrModal = () => {
+        closeModal()
+        setSelectedOutlet(null)
+    }
+
+    const handleDownloadQr = () => {
+        if (!selectedOutlet) return
+
+        const qrCanvas = qrContainerRef.current?.querySelector("canvas")
+        if (!qrCanvas) {
+            toast.warn("QR code belum siap untuk diunduh")
+            return
+        }
+
+        const padding = 24
+        const title = "Outlet QR Code"
+        const lineOne = `Outlet: ${selectedOutlet.name}`
+        const lineTwo = `ID: ${selectedOutlet.id}`
+
+        const exportCanvas = document.createElement("canvas")
+        exportCanvas.width = qrCanvas.width + (padding * 2)
+        exportCanvas.height = qrCanvas.height + 190
+
+        const ctx = exportCanvas.getContext("2d")
+        if (!ctx) {
+            toast.warn("Gagal membuat file download")
+            return
+        }
+
+        ctx.fillStyle = "#FFFFFF"
+        ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height)
+
+        ctx.textAlign = "center"
+        ctx.fillStyle = "#111827"
+        ctx.font = "700 28px Arial"
+        ctx.fillText(title, exportCanvas.width / 2, 46)
+
+        ctx.font = "500 20px Arial"
+        ctx.fillText(lineOne, exportCanvas.width / 2, 82)
+
+        ctx.font = "500 18px Arial"
+        ctx.fillStyle = "#4B5563"
+        ctx.fillText(lineTwo, exportCanvas.width / 2, 112)
+
+        ctx.drawImage(qrCanvas, padding, 130)
+
+        const link = document.createElement("a")
+        link.href = exportCanvas.toDataURL("image/png")
+        link.download = `outlet-${selectedOutlet.id}-qrcode.png`
+        link.click()
+    }
+
     const syncOutletHandle = async () => {
         try {
             const response = await fetch(`${API_URL}/admin/outlet/sync-outlet`, {
@@ -126,7 +191,7 @@ const Outlet: React.FC = () => {
     }
 
 
-    const header = ["No", "outlet", "phone", "address"];
+    const header = ["No", "outlet", "phone", "address", "action"];
 
     return (
         isLoading ?
@@ -208,6 +273,11 @@ const Outlet: React.FC = () => {
                                     <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                         {i.address ? i.address : "-"}
                                     </TableCell>
+                                    <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        <Button size="xs" onClick={() => {
+                                            handleOpenQrModal(i)
+                                        }} variant="primary"><BiQr /></Button>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBasic>
@@ -219,6 +289,36 @@ const Outlet: React.FC = () => {
                         </div>
                     </div>
                 </div>
+                <Modal isOpen={isOpen} onClose={handleCloseQrModal} className="max-w-[700px] m-4">
+                    <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+                        <div className="px-2 text-center">
+                            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+                                QR Code Outlet
+                            </h4>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                {selectedOutlet ? `${selectedOutlet.name}` : "Outlet tidak ditemukan"}
+                            </p>
+                        </div>
+
+                        <div className="mt-6 flex justify-center px-2">
+                            {selectedOutlet && (
+                                <div ref={qrContainerRef} className="rounded-xl border border-gray-200 p-4 dark:border-gray-700">
+                                    <QRCodeCanvas
+                                        value={String(selectedOutlet.id)}
+                                        size={240}
+                                        level="H"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="mt-5 flex justify-center px-2">
+                            <Button size="sm" onClick={handleDownloadQr}>
+                                Download QR Code
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
             </div>
     );
 };

@@ -30,6 +30,7 @@
     "jwt-decode": "^4.0.0",
     "next": "^16.2.2",
     "node-base64-img": "^2.0.0",
+    "qrcode.react": "^4.2.0",
     "quill": "^2.0.3",
     "quill-delta-to-markdown": "^0.6.0",
     "react": "^19.2.4",
