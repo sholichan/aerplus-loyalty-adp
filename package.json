@@ -6,7 +6,8 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "install": "npm install --legacy-peer-deps"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.15",
