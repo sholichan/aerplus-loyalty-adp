@@ -3,6 +3,7 @@ import { PulseLoading } from "@/components/common/loading";
 import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
 import MonthlyOrderChart from "@/components/ecommerce/MonthlyOrderChart";
 import TopUserOrders from "@/components/ecommerce/TopUserOrders";
+import DailyRefillChart from "@/components/ecommerce/DailyRefillChart";
 import DatePicker from "@/components/form/date-picker";
 import { RootState } from "@/store";
 import { useRouter } from "next/navigation";
@@ -106,6 +107,10 @@ export default function Dashboard() {
                     <MonthlyOrderChart startDate={startDate} endDate={endDate} />
                 </div>
 
+                <div className="col-span-12">
+                    <DailyRefillChart startDate={startDate} endDate={endDate} />
+                </div>
+
 
                 <div className="col-span-12">
                     {/* <StatisticsChart /> */}
@@ -118,4 +123,3 @@ export default function Dashboard() {
             </div >
     );
 }
-

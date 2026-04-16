@@ -13,6 +13,7 @@ import { useSidebar } from "../context/SidebarContext";
 import { BsShopWindow } from "react-icons/bs";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaGift } from "react-icons/fa";
+import { BsDroplet } from "react-icons/bs";
 
 import {
   ChevronDownIcon,
@@ -58,6 +59,16 @@ const navItems: NavItem[] = [
     icon: <FiShoppingCart size={20} />,
     name: "Orders",
     path: "/order",
+  },
+  {
+    icon: <FiShoppingCart size={20} />,
+    name: "Shop",
+    path: "/shop",
+  },
+  {
+    icon: <BsDroplet size={20} />,
+    name: "Refill",
+    path: "/refill",
   },
   {
     icon: <PiFlagBannerFold size={20} />,

@@ -146,4 +146,28 @@ export interface Subdistrict {
     updated_at: string;
 }
 
+export type ShopOrderItemType = {
+    product_name: string;
+    qty: number;
+    subtotal: number;
+    subtotal_price: number;
+    subtotal_point: number;
+};
+
+export type ShopOrderType = {
+    id: number;
+    order_number: string;
+    outlet_name: string;
+    payment_method: string;
+    payment_status: string;
+    status: string;
+    payment_date: string | null;
+    pickup_date: string | null;
+    order_date: string;
+    total_price: number;
+    total_point: number;
+    price_or_point: number;
+    payment_unit: "price" | "point";
+    items: ShopOrderItemType[];
+};
 

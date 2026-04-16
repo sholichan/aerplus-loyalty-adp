@@ -18,6 +18,37 @@ type PropsType = {
   required?: boolean;
 };
 
+const isValidDate = (value: Date): boolean => !Number.isNaN(value.getTime());
+
+const normalizeDateOption = (value?: DateOption): DateOption | undefined => {
+  if (value === undefined || value === null) return undefined;
+
+  if (Array.isArray(value)) {
+    const normalized = value
+      .map((item) => normalizeDateOption(item as DateOption))
+      .filter((item): item is Date | string | number => item !== undefined);
+
+    return normalized.length ? normalized : undefined;
+  }
+
+  if (value instanceof Date) {
+    return isValidDate(value) ? value : undefined;
+  }
+
+  if (typeof value === "string") {
+    if (!value.trim()) return undefined;
+    const parsed = new Date(value);
+    return isValidDate(parsed) ? value : undefined;
+  }
+
+  if (typeof value === "number") {
+    const parsed = new Date(value);
+    return isValidDate(parsed) ? value : undefined;
+  }
+
+  return undefined;
+};
+
 export default function DatePicker({
   id,
   mode,
@@ -30,14 +61,18 @@ export default function DatePicker({
   required = false,
 }: PropsType) {
   useEffect(() => {
+    const safeDefaultDate = normalizeDateOption(defaultDate);
+    const safeMinDate = normalizeDateOption(minDate);
+    const safeMaxDate = normalizeDateOption(maxDate);
+
     const flatPickr = flatpickr(`#${id}`, {
       mode: mode || "single",
       static: true,
       monthSelectorType: "static",
       dateFormat: "Y-m-d",
-      defaultDate,
-      minDate, // <-- terusin
-      maxDate, // <-- terusin
+      defaultDate: safeDefaultDate,
+      minDate: safeMinDate,
+      maxDate: safeMaxDate,
       onChange,
     });
 
