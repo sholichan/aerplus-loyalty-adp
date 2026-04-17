@@ -106,14 +106,28 @@ const Outlet: React.FC = () => {
             return
         }
 
-        const padding = 24
-        const title = "Outlet QR Code"
-        const lineOne = `Outlet: ${selectedOutlet.name}`
-        const lineTwo = `ID: ${selectedOutlet.id}`
+        const horizontalPadding = 40
+        const sideMargin = 24
+        const topPadding = 24
+        const lineOneParts = `Depot ${selectedOutlet.name}`
+            .split(" ")
+            .reduce<string[][]>((acc, word, i) => {
+                if (i % 2 === 0) {
+                    acc.push([word])
+                } else {
+                    const currentLine = acc[acc.length - 1]
+                    if (currentLine) {
+                        currentLine.push(word)
+                    }
+                }
+                return acc
+            }, [])
+            .map((line) => line.join(" "))
+            .slice(0, 2)
 
         const exportCanvas = document.createElement("canvas")
-        exportCanvas.width = qrCanvas.width + (padding * 2)
-        exportCanvas.height = qrCanvas.height + 190
+        exportCanvas.width = qrCanvas.width + (horizontalPadding * 2)
+        exportCanvas.height = qrCanvas.height + 190 + topPadding
 
         const ctx = exportCanvas.getContext("2d")
         if (!ctx) {
@@ -126,17 +140,23 @@ const Outlet: React.FC = () => {
 
         ctx.textAlign = "center"
         ctx.fillStyle = "#111827"
-        ctx.font = "700 28px Arial"
-        ctx.fillText(title, exportCanvas.width / 2, 46)
-
         ctx.font = "500 20px Arial"
-        ctx.fillText(lineOne, exportCanvas.width / 2, 82)
+        ctx.fillText(
+            lineOneParts[0] || "",
+            exportCanvas.width / 2,
+            36 + topPadding,
+            exportCanvas.width - (sideMargin * 2)
+        )
 
-        ctx.font = "500 18px Arial"
-        ctx.fillStyle = "#4B5563"
-        ctx.fillText(lineTwo, exportCanvas.width / 2, 112)
+        ctx.font = "700 28px Arial"
+        ctx.fillText(
+            lineOneParts[1] || "",
+            exportCanvas.width / 2,
+            72 + topPadding,
+            exportCanvas.width - (sideMargin * 2)
+        )
 
-        ctx.drawImage(qrCanvas, padding, 130)
+        ctx.drawImage(qrCanvas, (exportCanvas.width - qrCanvas.width) / 2, 118 + topPadding)
 
         const link = document.createElement("a")
         link.href = exportCanvas.toDataURL("image/png")
@@ -292,11 +312,13 @@ const Outlet: React.FC = () => {
                 <Modal isOpen={isOpen} onClose={handleCloseQrModal} className="max-w-[700px] m-4">
                     <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
                         <div className="px-2 text-center">
-                            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+                            <h4 className="mb-2 text-[26px] font-semibold text-gray-800 dark:text-white/90">
                                 QR Code Outlet
                             </h4>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {selectedOutlet ? `${selectedOutlet.name}` : "Outlet tidak ditemukan"}
+                            <p className="text-[16px] text-gray-500 dark:text-gray-400">
+                                {selectedOutlet
+                                    ? `Depot ${selectedOutlet.name}`
+                                    : "Outlet tidak ditemukan"}
                             </p>
                         </div>
 

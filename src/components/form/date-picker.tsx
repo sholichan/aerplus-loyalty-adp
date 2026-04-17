@@ -26,9 +26,11 @@ const normalizeDateOption = (value?: DateOption): DateOption | undefined => {
   if (Array.isArray(value)) {
     const normalized = value
       .map((item) => normalizeDateOption(item as DateOption))
-      .filter((item): item is Date | string | number => item !== undefined);
+      .filter((item): item is string | number | Date => {
+        return item !== undefined && !Array.isArray(item);
+      });
 
-    return normalized.length ? normalized : undefined;
+    return normalized.length ? (normalized as unknown as DateOption) : undefined;
   }
 
   if (value instanceof Date) {
