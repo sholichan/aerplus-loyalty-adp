@@ -4,6 +4,7 @@ import { PulseLoading } from "@/components/common/loading";
 import DatePicker from "@/components/form/date-picker";
 import Input from "@/components/form/input/InputField";
 import Pagination from "@/components/tables/Pagination";
+import LimitPagination from "@/components/tables/LimitPagination";
 import TableBasic from "@/components/tables/Table";
 import { Modal } from "@/components/ui/modal";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -31,6 +32,7 @@ const ShopPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [limit, setLimit] = useState(10);
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [search, setSearch] = useState<string>("");
@@ -77,7 +79,7 @@ const ShopPage: React.FC = () => {
             const fetchShop = async () => {
                 try {
                     const response = await fetch(
-                        `${API_URL}/admin/shop/get-all?search=${search}&outletId=${selectedOutlet}&page=${currentPage}&limit=10&startDate=${startDate}&endDate=${endDate}`,
+                        `${API_URL}/admin/shop/get-all?search=${search}&outletId=${selectedOutlet}&page=${currentPage}&limit=${limit}&startDate=${startDate}&endDate=${endDate}`,
                         {
                             method: "GET",
                             headers: {
@@ -99,11 +101,12 @@ const ShopPage: React.FC = () => {
             fetchShop();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [refresh, currentPage, searchButton, startDate, endDate, selectedOutlet]);
+    }, [refresh, currentPage, searchButton, startDate, endDate, selectedOutlet, limit]);
 
-    const handlePaginationChange = (page: number) => {
+    const handlePaginationChange = (page: number, limit: number) => {
         setIsLoading(true);
         setCurrentPage(page);
+        setLimit(limit)
     };
 
     const dateConvert = (isoString?: string | null) => {
@@ -311,48 +314,57 @@ const ShopPage: React.FC = () => {
                             </TableBasic>
 
                             <div className="flex justify-end">
-                                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePaginationChange} />
+                                <LimitPagination
+                                    currentPage={currentPage}
+                                    limit={limit}
+                                    totalPages={totalPages}
+                                    onPaginationChange={handlePaginationChange}
+                                />
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[900px] m-4">
-                    <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
-                        <h4 className="font-semibold text-gray-800 dark:text-white/90">
-                            Detail Shop - {selectedData?.order_number}
-                        </h4>
-                    </div>
-                    <div className="p-6 space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                            <div><span className="text-gray-500">Outlet:</span> {selectedData?.outlet_name || "-"}</div>
-                            <div><span className="text-gray-500">Metode Pembayaran:</span> {selectedData?.payment_method || "-"}</div>
-                            <div><span className="text-gray-500">Status:</span> {selectedData?.status || "-"}</div>
-                            <div>
-                                <span className="text-gray-500">Price/Point:</span>{" "}
-                                {selectedData?.payment_unit === "point"
-                                    ? `${Number(selectedData?.price_or_point || 0).toLocaleString("id-ID")} Point`
-                                    : `Rp ${Number(selectedData?.price_or_point || 0).toLocaleString("id-ID")}`}
+                    <div className="flex max-h-[85vh] flex-col">
+                        <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+                            <h4 className="font-semibold text-gray-800 dark:text-white/90">
+                                Detail Shop - {selectedData?.order_number}
+                            </h4>
+                        </div>
+                        <div className="flex min-h-0 flex-1 flex-col p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm shrink-0">
+                                <div><span className="text-gray-500">Outlet:</span> {selectedData?.outlet_name || "-"}</div>
+                                <div><span className="text-gray-500">Metode Pembayaran:</span> {selectedData?.payment_method || "-"}</div>
+                                <div><span className="text-gray-500">Status:</span> {selectedData?.status || "-"}</div>
+                                <div>
+                                    <span className="text-gray-500">Price/Point:</span>{" "}
+                                    {selectedData?.payment_unit === "point"
+                                        ? `${Number(selectedData?.price_or_point || 0).toLocaleString("id-ID")} Point`
+                                        : `Rp ${Number(selectedData?.price_or_point || 0).toLocaleString("id-ID")}`}
+                                </div>
+                            </div>
+
+                            <div className="mt-4 max-h-[60vh] overflow-auto custom-scrollbar">
+                                <TableBasic header={["Product Name", "Qty", "Subtotal (Price/Point)"]} isSetMinW="none">
+                                    {(selectedData?.items || []).map((item, index) => (
+                                        <TableRow key={`${item.product_name}-${index}`}>
+                                            <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                                {item.product_name}
+                                            </TableCell>
+                                            <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                                {item.qty}
+                                            </TableCell>
+                                            <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                                {selectedData?.payment_unit === "point"
+                                                    ? `${Number(item.subtotal_point || 0).toLocaleString("id-ID")} Point`
+                                                    : `Rp ${Number(item.subtotal_price || item.subtotal || 0).toLocaleString("id-ID")}`}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBasic>
                             </div>
                         </div>
-
-                        <TableBasic header={["Product Name", "Qty", "Subtotal (Price/Point)"]} isSetMinW="none">
-                            {(selectedData?.items || []).map((item, index) => (
-                                <TableRow key={`${item.product_name}-${index}`}>
-                                    <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {item.product_name}
-                                    </TableCell>
-                                    <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {item.qty}
-                                    </TableCell>
-                                    <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {selectedData?.payment_unit === "point"
-                                            ? `${Number(item.subtotal_point || 0).toLocaleString("id-ID")} Point`
-                                            : `Rp ${Number(item.subtotal_price || item.subtotal || 0).toLocaleString("id-ID")}`}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBasic>
                     </div>
                 </Modal>
             </>

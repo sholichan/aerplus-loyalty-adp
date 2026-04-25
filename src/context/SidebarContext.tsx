@@ -36,7 +36,8 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth < 768;
+      // Keep sidebar behavior aligned with Tailwind `lg` breakpoint (1024px).
+      const mobile = window.innerWidth < 1024;
       setIsMobile(mobile);
       if (!mobile) {
         setIsMobileOpen(false);

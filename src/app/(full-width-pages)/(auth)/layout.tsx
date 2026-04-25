@@ -27,6 +27,7 @@ export default function AuthLayout({
                     height={56}
                     src="/images/logo/aerplus.png"
                     alt="Logo"
+                    loading="eager"
                   />
                 </Link>
               </div>

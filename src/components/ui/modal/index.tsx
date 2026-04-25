@@ -37,14 +37,26 @@ export const Modal: React.FC<ModalProps> = ({
   }, [isOpen, onClose]);
 
   useEffect(() => {
+    const body = document.body;
+    const previousOverflow = body.style.overflow;
+    const previousPaddingRight = body.style.paddingRight;
+
     if (isOpen) {
-      document.body.style.overflow = "hidden";
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      body.style.overflow = "hidden";
+
+      // Prevent layout shift when vertical scrollbar disappears.
+      if (scrollbarWidth > 0) {
+        body.style.paddingRight = `${scrollbarWidth}px`;
+      }
     } else {
-      document.body.style.overflow = "unset";
+      body.style.overflow = previousOverflow;
+      body.style.paddingRight = previousPaddingRight;
     }
 
     return () => {
-      document.body.style.overflow = "unset";
+      body.style.overflow = previousOverflow;
+      body.style.paddingRight = previousPaddingRight;
     };
   }, [isOpen]);
 
