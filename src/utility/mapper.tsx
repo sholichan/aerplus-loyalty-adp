@@ -73,3 +73,12 @@ export function getRewardTypeBadge(type: string) {
             };
     }
 }
+
+export function sanitizeFilename(text: string) {
+    return text
+        .toLowerCase()
+        .replace(/\s+/g, "-")          // spasi → dash
+        .replace(/[^\w\-]+/g, "")      // hapus karakter aneh
+        .replace(/\-\-+/g, "-")        // double dash → single
+        .replace(/^-+|-+$/g, "");      // trim dash depan/belakang
+}

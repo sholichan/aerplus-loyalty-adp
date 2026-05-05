@@ -3,7 +3,6 @@
 import { PulseLoading } from "@/components/common/loading";
 import DatePicker from "@/components/form/date-picker";
 import Input from "@/components/form/input/InputField";
-import Pagination from "@/components/tables/Pagination";
 import LimitPagination from "@/components/tables/LimitPagination";
 import TableBasic from "@/components/tables/Table";
 import { Modal } from "@/components/ui/modal";
@@ -18,6 +17,7 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { statusStyles, statusLabel, paymentStyles, paymentLabel } from "@/utility/enum";
 
 const ShopPage: React.FC = () => {
     const dispatch = useDispatch();
@@ -161,13 +161,14 @@ const ShopPage: React.FC = () => {
     const header = [
         "No",
         "Outlet Name",
+        "Member",
         "Nomor Pesanan",
         "Metode Pembayaran",
         "Price/Point",
         "Status",
+        "Tanggal Pesan",
         "Tanggal Pembayaran",
         "Tanggal Pengambilan",
-        "Tanggal Pesan",
         "Action",
     ];
 
@@ -269,18 +270,35 @@ const ShopPage: React.FC = () => {
                                             {item.outlet_name}
                                         </TableCell>
                                         <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                            {item.user.name}
+                                        </TableCell>
+                                        <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                             {item.order_number}
                                         </TableCell>
                                         <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            {item.payment_method}
+                                            <span
+                                                className={`px-2 py-1 rounded-full text-xs font-medium ${paymentStyles[item.payment_method] || "bg-gray-100 text-gray-600"
+                                                    }`}
+                                            >
+                                                { paymentLabel[item.payment_method] || item.payment_method }
+                                            </span>
                                         </TableCell>
                                         <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                             {item.payment_unit === "point"
-                                                ? `${Number(item.price_or_point || 0).toLocaleString("id-ID")} Point`
+                                                ? `${Number(item.price_or_point || 0).toLocaleString("id-ID")} Poin`
                                                 : `Rp ${Number(item.price_or_point || 0).toLocaleString("id-ID")}`}
                                         </TableCell>
                                         <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            {item.status}
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusStyles[item.status] || "bg-gray-100 text-gray-600"
+                                                }`}>
+                                                {statusLabel[item.status] || item.status}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="p-3 text-theme-sm text-gray-500 dark:text-gray-400">
+                                            <div className="rounded-sm">
+                                                <span className="block text-theme-sm">{dateConvert(item.order_date)}</span>
+                                                <span className="block text-theme-xs">{timeConvert(item.order_date)}</span>
+                                            </div>
                                         </TableCell>
                                         <TableCell className="p-3 text-theme-sm text-gray-500 dark:text-gray-400">
                                             <div className="rounded-sm">
@@ -292,12 +310,6 @@ const ShopPage: React.FC = () => {
                                             <div className="rounded-sm">
                                                 <span className="block text-theme-sm">{dateConvert(item.pickup_date)}</span>
                                                 <span className="block text-theme-xs">{timeConvert(item.pickup_date)}</span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="p-3 text-theme-sm text-gray-500 dark:text-gray-400">
-                                            <div className="rounded-sm">
-                                                <span className="block text-theme-sm">{dateConvert(item.order_date)}</span>
-                                                <span className="block text-theme-xs">{timeConvert(item.order_date)}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
@@ -335,12 +347,12 @@ const ShopPage: React.FC = () => {
                         <div className="flex min-h-0 flex-1 flex-col p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm shrink-0">
                                 <div><span className="text-gray-500">Outlet:</span> {selectedData?.outlet_name || "-"}</div>
-                                <div><span className="text-gray-500">Metode Pembayaran:</span> {selectedData?.payment_method || "-"}</div>
-                                <div><span className="text-gray-500">Status:</span> {selectedData?.status || "-"}</div>
+                                <div><span className="text-gray-500">Metode Pembayaran:</span> {paymentLabel[selectedData?.payment_method || "-"]}</div>
+                                <div><span className="text-gray-500">Status:</span> {statusLabel[selectedData?.status || "-"]}</div>
                                 <div>
                                     <span className="text-gray-500">Price/Point:</span>{" "}
                                     {selectedData?.payment_unit === "point"
-                                        ? `${Number(selectedData?.price_or_point || 0).toLocaleString("id-ID")} Point`
+                                        ? `${Number(selectedData?.price_or_point || 0).toLocaleString("id-ID")} Poin`
                                         : `Rp ${Number(selectedData?.price_or_point || 0).toLocaleString("id-ID")}`}
                                 </div>
                             </div>
@@ -357,7 +369,7 @@ const ShopPage: React.FC = () => {
                                             </TableCell>
                                             <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                                 {selectedData?.payment_unit === "point"
-                                                    ? `${Number(item.subtotal_point || 0).toLocaleString("id-ID")} Point`
+                                                    ? `${Number(item.subtotal_point || 0).toLocaleString("id-ID")} Poin`
                                                     : `Rp ${Number(item.subtotal_price || item.subtotal || 0).toLocaleString("id-ID")}`}
                                             </TableCell>
                                         </TableRow>

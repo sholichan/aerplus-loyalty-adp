@@ -11,10 +11,12 @@ interface TableBasicProps {
   header: string[];
   children: React.ReactNode;
   isSetMinW?: string;
+  headerTextPosition?: string
 }
 
-export default function TableBasic({ header, children, isSetMinW }: TableBasicProps) {
+export default function TableBasic({ header, children, isSetMinW, headerTextPosition }: TableBasicProps) {
   const minW = isSetMinW === 'none' ? "" : 'min-w-[1102px]'
+  const headerClass = headerTextPosition ?? "text-start"
   return (
     <div className="overflow-hidden border-b border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
@@ -28,7 +30,7 @@ export default function TableBasic({ header, children, isSetMinW }: TableBasicPr
                     <TableCell
                       key={index}
                       isHeader
-                      className="p-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                      className={`p-3 font-medium text-gray-500 ${headerClass} text-theme-xs dark:text-gray-400`}
                     >
                       {item}
                     </TableCell>

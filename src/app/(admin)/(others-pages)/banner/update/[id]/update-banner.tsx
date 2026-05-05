@@ -30,14 +30,29 @@ const UpdateBanner = ({ id }: BannerId) => {
     const [previewBannner, setPreviewBannner] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"]
     const handleFileUpload = (file: File) => {
-        const reader = new FileReader();
+        console.info('file asda', file)
+        // ✅ Validasi ukuran
+        if (file.size > MAX_FILE_SIZE) {
+            toast.error("Ukuran file maksimal 5MB")
+            return
+        }
+
+        // ✅ Validasi tipe file
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            toast.error("Format file harus JPG, PNG, atau WEBP")
+            return
+        }
+
+        // ✅ Kalau lolos validasi baru dibaca
+        const reader = new FileReader()
         reader.onloadend = () => {
-            formikCreateUpdate.setFieldValue("base64", reader.result);
-        };
-        reader.readAsDataURL(file);
-    };
+            formikCreateUpdate.setFieldValue("base64", reader.result)
+        }
+        reader.readAsDataURL(file)
+    }
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const banner_url = API_URL?.split("/api")[0]

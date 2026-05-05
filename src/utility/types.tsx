@@ -169,5 +169,59 @@ export type ShopOrderType = {
     price_or_point: number;
     payment_unit: "price" | "point";
     items: ShopOrderItemType[];
+    user: {
+        id: string;
+        name: string;
+        phone_number: string;
+    }
 };
 
+export interface PartnerType {
+    id: string;
+    user_id: string | null;
+    user: UserType | null;
+
+    name: string;
+    ktp: string | null;
+    npwp: string | null;
+    address: string | null;
+    phone_number: string | null;
+
+    partner_start: string | null;
+    partner_end: string | null;
+
+    // 🔥 pakai versi ringan biar nggak circular
+    partner_outlets: PartnerOutletLiteType[];
+
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+}
+
+export interface PartnerOutletType {
+    id: string;
+
+    partner_id: string;
+    partner: PartnerLiteType; // 🔥 bukan full PartnerType
+
+    outlet_id: number;
+    outlet: OutletType;
+
+    partner_start: string | null;
+    partner_end: string | null;
+
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+}
+
+export interface PartnerLiteType {
+    id: string;
+    name: string;
+}
+
+export interface PartnerOutletLiteType {
+    id: string;
+    outlet_id: number;
+    outlet: OutletType;
+}

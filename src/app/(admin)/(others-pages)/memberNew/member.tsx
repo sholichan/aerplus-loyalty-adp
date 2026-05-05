@@ -19,6 +19,10 @@ import { toast } from "react-toastify";
 import RequiredSymbol from "@/components/common/RequiredSymbol";
 import { Redeem, UserRedeemHistory } from "./redeem-history"
 import { Order, UserOrderHistory } from "./order-history"
+import { UserShopOrderHistory } from "./shop-order-history"
+import {
+    ShopOrderType as ShopOrder,
+} from "@/utility/types";
 import DatePicker from "@/components/form/date-picker";
 
 export interface LocationInfo {
@@ -53,6 +57,7 @@ export default function UserOrderTable() {
 
     const [orders, setOrders] = useState<Order[]>([]);
     const [redeems, setRedeems] = useState<Redeem[]>([]);
+    const [shopOrders, setShopOrders] = useState<ShopOrder[]>([]);
     const [tableData, setTableData] = useState<NewUserType[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [refresh, setRefresh] = useState<boolean>(false);
@@ -64,20 +69,34 @@ export default function UserOrderTable() {
     const [prevSelOutlet, setPrevSelOutlet] = useState<string>("");
     const [openRow, setOpenRow] = useState<string | null>(null);
     const [getOrderLoading, setGetOrderLoading] = useState<boolean>(false);
+    const [historyTab, setHistoryTab] = useState<"orders" | "redeems" | "shopOrders">("orders");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     const toggleRow = async (id: string) => {
-        setOpenRow(openRow === id ? null : id);
+        if (openRow === id) {
+            setOpenRow(null);
+            setGetOrderLoading(false);
+            return;
+        }
+
+        setOpenRow(id);
+        setHistoryTab("orders");
+        setOrders([]);
+        setRedeems([]);
+        setShopOrders([]);
         setGetOrderLoading(true);
 
-        const orderByUser = fetchOrdersByUser(id);
-        const redeemByUser = fetchRedeemsByUser(id);
-        await Promise.all([orderByUser, redeemByUser])
-
-        setGetOrderLoading(false);
+        try {
+            const orderByUser = fetchOrdersByUser(id);
+            const redeemByUser = fetchRedeemsByUser(id);
+            const shopOrderByUser = fetchShopOrdersByUser(id);
+            await Promise.all([orderByUser, redeemByUser, shopOrderByUser]);
+        } finally {
+            setGetOrderLoading(false);
+        }
     };
 
     // Authentication guard
@@ -186,6 +205,28 @@ export default function UserOrderTable() {
         }
     }
 
+    const fetchShopOrdersByUser = async (id: string) => {
+        try {
+            const response = await fetch(
+                `${API_URL}/admin/shop/list/user/${id}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${auth.token}`,
+                    },
+                }
+            );
+
+            const res = await response.json();
+            if (res.statusCode === 200) {
+                setShopOrders(res.data)
+            }
+
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
+    }
     const handleInjectPoint = async () => {
         if (injectPoin) {
             setDisableAddPoin(true)
@@ -380,14 +421,14 @@ export default function UserOrderTable() {
 
                 {/* Table */}
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <table className="w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
                         <thead className="bg-gray-50 dark:bg-gray-800">
                             <tr>
                                 {["No", "Name", "Phone", "Outlet", "Total Orders", "Status", ""].map(
                                     (header) => (
                                         <th
                                             key={header}
-                                            className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                                            className={`px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider ${header === "No" ? "w-16" : header === "" ? "w-10" : ""}`}
                                         >
                                             {header}
                                         </th>
@@ -439,7 +480,7 @@ export default function UserOrderTable() {
                                                     {user.is_active ? "Active" : "Inactive"}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-right">
+                                            <td className="px-6 py-4 text-center">
                                                 <ChevronDownIcon
                                                     className={`w-5 h-5 text-gray-400 transform transition-transform duration-200 ${isOpenRow ? "rotate-180" : ""
                                                         }`}
@@ -496,11 +537,52 @@ export default function UserOrderTable() {
                                                         </div>
 
                                                         {getOrderLoading && <PulseLoading />}
+
+                                                        {!getOrderLoading && (
+                                                            <div className="flex items-center justify-between">
+                                                                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                                    History
+                                                                </h4>
+                                                                <div className="inline-flex rounded-lg bg-white/70 p-1 ring-1 ring-gray-200/80 backdrop-blur dark:bg-gray-900/40 dark:ring-gray-700">
+                                                                    <button
+                                                                        type="button" onClick={()=> setHistoryTab("orders")}
+                                                                        className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${historyTab === "orders"
+                                                                        ? "bg-brand-500 text-white shadow-theme-xs"
+                                                                        : "text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/[0.06]"
+                                                                        }`}
+                                                                    >
+                                                                        Orders ({orders.length})
+                                                                    </button>
+                                                                    <button
+                                                                        type="button" onClick={()=> setHistoryTab("redeems")}
+                                                                        className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${historyTab === "redeems"
+                                                                        ? "bg-brand-500 text-white shadow-theme-xs"
+                                                                        : "text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/[0.06]"
+                                                                        }`}
+                                                                    >
+                                                                        Redeems ({redeems.length})
+                                                                    </button>
+                                                                    <button
+                                                                        type="button" onClick={()=> setHistoryTab("shopOrders")}
+                                                                        className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${historyTab === "shopOrders"
+                                                                        ? "bg-brand-500 text-white shadow-theme-xs"
+                                                                        : "text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/[0.06]"
+                                                                        }`}
+                                                                    >
+                                                                        Shop ({shopOrders.length})
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
                                                         {/* Order History */}
-                                                        {(!getOrderLoading) && <UserOrderHistory orders={orders} />}
+                                                        {(!getOrderLoading && historyTab === "orders") && <UserOrderHistory orders={orders} />}
 
                                                         {/* Redeem History */}
-                                                        {(!getOrderLoading) && <UserRedeemHistory redeems={redeems} />}
+                                                        {(!getOrderLoading && historyTab === "redeems") && <UserRedeemHistory redeems={redeems} />}
+
+                                                        {/* Redeem History */}
+                                                        {(!getOrderLoading && historyTab === "shopOrders") && <UserShopOrderHistory shopOrders={shopOrders} />}
                                                     </div>
                                                 </td>
                                             </tr>

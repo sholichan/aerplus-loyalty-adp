@@ -20,6 +20,8 @@ import { useModal } from "@/hooks/useModal";
 import { BiQr } from "react-icons/bi";
 import { QRCodeCanvas } from "qrcode.react";
 
+import { sanitizeFilename } from "@/utility/mapper";
+
 
 const Outlet: React.FC = () => {
     const dispatch = useDispatch()
@@ -109,21 +111,8 @@ const Outlet: React.FC = () => {
         const horizontalPadding = 40
         const sideMargin = 24
         const topPadding = 24
-        const lineOneParts = `Depot ${selectedOutlet.name}`
-            .split(" ")
-            .reduce<string[][]>((acc, word, i) => {
-                if (i % 2 === 0) {
-                    acc.push([word])
-                } else {
-                    const currentLine = acc[acc.length - 1]
-                    if (currentLine) {
-                        currentLine.push(word)
-                    }
-                }
-                return acc
-            }, [])
-            .map((line) => line.join(" "))
-            .slice(0, 2)
+        const lineOneParts = ['Depot Aerplus', selectedOutlet.name.replace('Aerplus ', '')]
+            console.info('lineOneParts', lineOneParts)
 
         const exportCanvas = document.createElement("canvas")
         exportCanvas.width = qrCanvas.width + (horizontalPadding * 2)
@@ -160,7 +149,7 @@ const Outlet: React.FC = () => {
 
         const link = document.createElement("a")
         link.href = exportCanvas.toDataURL("image/png")
-        link.download = `outlet-${selectedOutlet.id}-qrcode.png`
+        link.download = `outlet-${sanitizeFilename(selectedOutlet.name)}-qrcode.png`
         link.click()
     }
 

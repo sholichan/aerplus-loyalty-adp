@@ -37,8 +37,13 @@ const navItems: NavItem[] = [
   },
   {
     icon: <BsPeople size={20} />,
-    name: "Member",
-    path: "/memberNew",
+    name: "User",
+    path: "/",
+    subItems: [
+      { name: "Member", path: "/memberNew", pro: false },
+      { name: "Partner", path: "/partner", pro: false },
+      { name: "SPV", path: "/spv", pro: false },
+    ],
   },
   // {
   //   icon: <BsPeople size={20} />,
