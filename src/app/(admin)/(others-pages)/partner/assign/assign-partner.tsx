@@ -212,42 +212,13 @@ const AssignPartner: React.FC = () => {
       if (res.statusCode === 200) {
         toast.success("Partner assigned successfully!");
         setSelectedOutletIds([]);
+        router.push("/partner")
       } else {
         toast.error(res.err || "Failed to assign partner");
       }
     } catch (error) {
       console.error("Error assigning partner:", error);
       toast.error("Failed to assign partner");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const unassign = async () => {
-    if (!selectedUserId) {
-      toast.error("User must be selected");
-      return;
-    }
-    try {
-      setIsSubmitting(true);
-      const response = await fetch(`${API_URL}/admin/partner/unassign`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${auth.token}`,
-        },
-        body: JSON.stringify({ user_id: selectedUserId }),
-      });
-      const res = await response.json();
-      if (res.statusCode === 200) {
-        toast.success("Unassign success");
-        setSelectedOutletIds([]);
-      } else {
-        toast.error(res.err || "Failed to unassign");
-      }
-    } catch (error) {
-      console.error("Error unassign:", error);
-      toast.error("Failed to unassign");
     } finally {
       setIsSubmitting(false);
     }
@@ -345,14 +316,6 @@ const AssignPartner: React.FC = () => {
         </div>
 
         <div className="flex gap-2 md:justify-end">
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={isSubmitting}
-            onClick={unassign}
-          >
-            Unassign
-          </Button>
           <Button size="sm" disabled={!canSubmit} onClick={submitAssign}>
             {isSubmitting ? "Saving..." : "Submit"}
           </Button>
