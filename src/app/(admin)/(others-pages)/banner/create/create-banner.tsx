@@ -28,7 +28,6 @@ const CreateBanner: React.FC = () => {
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
     const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"]
     const handleFileUpload = (file: File) => {
-        console.info('file asda', file)
         // ✅ Validasi ukuran
         if (file.size > MAX_FILE_SIZE) {
             toast.error("Ukuran file maksimal 5MB")

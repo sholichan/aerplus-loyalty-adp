@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { BiCoinStack } from "react-icons/bi";
+import { GrUserWorker } from "react-icons/gr";
 import { BsPeople } from "react-icons/bs";
 import { FiShoppingCart } from "react-icons/fi";
 import { PiFlagBannerFold } from "react-icons/pi";
@@ -120,6 +121,11 @@ const navItems: NavItem[] = [
 ];
 
 const othersItems: NavItem[] = [
+  {
+    icon: <GrUserWorker size={20} />,
+    name: "PIC",
+    path: "/pic",
+  },
   {
     icon: <BiCoinStack size={20} />,
     name: "Point",
