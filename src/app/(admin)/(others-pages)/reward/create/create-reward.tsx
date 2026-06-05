@@ -3,6 +3,7 @@
 import { PulseLoading } from "@/components/common/loading";
 import RequiredSymbol from "@/components/common/RequiredSymbol";
 import MarkdownEditor from "@/components/common/MarkdownEditor";
+import VoucherTemplatePositioner from "@/components/common/VoucherTemplatePositioner";
 import DatePicker from "@/components/form/date-picker";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
@@ -23,8 +24,10 @@ import { GetProduct } from "@/utility/fetcher";
 const CreateReward: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [dragActive, setDragActive] = useState(false);
+    const [dragActiveTemplate, setDragActiveTemplate] = useState(false);
     const [bogoOptions, setBogoOptions] = useState([]);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const voucherTemplateInputRef = useRef<HTMLInputElement | null>(null);
     const lastSubmit = useRef(0);
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const router = useRouter()
@@ -38,7 +41,7 @@ const CreateReward: React.FC = () => {
 
         const fetchProduct = async () => {
             const products = await GetProduct(auth.token as string)
-            setBogoOptions(products.map((product: any) => {
+            setBogoOptions((products ?? []).map((product: any) => {
                 return {
                     value: product.id,
                     label: `${product.number} - ${product.name}`,
@@ -69,6 +72,14 @@ const CreateReward: React.FC = () => {
             bogo_buy_qty: 1,
             bogo_get_qty: 1,
             merchandise_id: "",
+            undian_code_prefix: "",
+            undian_code_padding: 4,
+            undian_text_x: "",
+            undian_text_y: "",
+            undian_font_size: 48,
+            undian_font_color: "#000000",
+            undian_font_align: "left",
+            undian_voucher_template: "",
         },
         validationSchema: Yup.object({
             name: Yup.string().required("Nama reward wajib diisi"),
@@ -76,6 +87,22 @@ const CreateReward: React.FC = () => {
             point_eligibility: Yup.number().required("Syarat poin wajib diisi").min(1, "Minimal syarat poin adalah 1"),
             image: Yup.string().required("Wajib upload gambar voucher"),
             end_period: Yup.string().required("Wajib atur periode"),
+            undian_code_prefix: Yup.string().when("type", {
+                is: "undian",
+                then: (s) => s.required("Prefix kode wajib diisi"),
+            }),
+            undian_text_x: Yup.number().when("type", {
+                is: "undian",
+                then: (s) => s.required("Posisi X teks wajib diisi"),
+            }),
+            undian_text_y: Yup.number().when("type", {
+                is: "undian",
+                then: (s) => s.required("Posisi Y teks wajib diisi"),
+            }),
+            undian_voucher_template: Yup.string().when("type", {
+                is: "undian",
+                then: (s) => s.required("Wajib upload template voucher"),
+            }),
         }),
         onSubmit: async (values, { resetForm }) => {
             setIsLoading(true)
@@ -142,12 +169,32 @@ const CreateReward: React.FC = () => {
         if (type !== "merchandise") {
             formikReward.setFieldValue("merchandise_id", "");
         }
+
+        if (type !== "undian") {
+            formikReward.setFieldValue("undian_code_prefix", "");
+            formikReward.setFieldValue("undian_code_padding", 4);
+            formikReward.setFieldValue("undian_text_x", "");
+            formikReward.setFieldValue("undian_text_y", "");
+            formikReward.setFieldValue("undian_font_size", 48);
+            formikReward.setFieldValue("undian_font_color", "#000000");
+            formikReward.setFieldValue("undian_font_align", "left");
+            formikReward.setFieldValue("undian_voucher_template", "");
+        }
     }, [formikReward.values.type]);
+
+    const handleVoucherTemplateUpload = (file: File) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            formikReward.setFieldValue("undian_voucher_template", reader.result);
+        };
+        reader.readAsDataURL(file);
+    };
 
     const rewardTypeOptions = [
         { value: "discount", label: "Discount" },
         { value: "bogo", label: "BOGO (ex: buy 1 get 1)" },
         { value: "merchandise", label: "Merchandise" },
+        { value: "undian", label: "Undian (Lottery)" },
     ];
 
     return (
@@ -279,6 +326,154 @@ const CreateReward: React.FC = () => {
                                                     formikReward.setFieldValue("merchandise_id", e)
                                                 }
                                             />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {formikReward.values.type === "undian" && (
+                                    <div className="space-y-4">
+                                        <div>
+                                            <Label>Kode Prefix <RequiredSymbol /></Label>
+                                            <Input
+                                                type="text"
+                                                name="undian_code_prefix"
+                                                placeholder="UND-"
+                                                onChange={formikReward.handleChange}
+                                            />
+                                            {formikReward.touched.undian_code_prefix && formikReward.errors.undian_code_prefix ? (
+                                                <div className="text-sm text-red-500">{formikReward.errors.undian_code_prefix}</div>
+                                            ) : null}
+                                        </div>
+
+                                        <div>
+                                            <Label>Panjang Nomor (padding)</Label>
+                                            <Input
+                                                type="number"
+                                                name="undian_code_padding"
+                                                placeholder="4"
+                                                onChange={formikReward.handleChange}
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <Label>Posisi Teks X (otomatis dari preview) <RequiredSymbol /></Label>
+                                                <input
+                                                    type="number"
+                                                    name="undian_text_x"
+                                                    readOnly
+                                                    value={formikReward.values.undian_text_x}
+                                                    className="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
+                                                    onChange={() => undefined}
+                                                />
+                                                {formikReward.touched.undian_text_x && formikReward.errors.undian_text_x ? (
+                                                    <div className="text-sm text-red-500">{formikReward.errors.undian_text_x}</div>
+                                                ) : null}
+                                            </div>
+                                            <div>
+                                                <Label>Posisi Teks Y (otomatis dari preview) <RequiredSymbol /></Label>
+                                                <input
+                                                    type="number"
+                                                    name="undian_text_y"
+                                                    readOnly
+                                                    value={formikReward.values.undian_text_y}
+                                                    className="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
+                                                    onChange={() => undefined}
+                                                />
+                                                {formikReward.touched.undian_text_y && formikReward.errors.undian_text_y ? (
+                                                    <div className="text-sm text-red-500">{formikReward.errors.undian_text_y}</div>
+                                                ) : null}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <Label>Ukuran Font</Label>
+                                                <Input
+                                                    type="number"
+                                                    name="undian_font_size"
+                                                    onChange={formikReward.handleChange}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label>Warna Font</Label>
+                                                <input
+                                                    type="color"
+                                                    name="undian_font_color"
+                                                    value={formikReward.values.undian_font_color}
+                                                    onChange={formikReward.handleChange}
+                                                    className="h-10 w-full rounded border border-gray-300 cursor-pointer"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <Label>Perataan Teks</Label>
+                                            <Select
+                                                options={[
+                                                    { value: "left", label: "Kiri" },
+                                                    { value: "center", label: "Tengah" },
+                                                    { value: "right", label: "Kanan" },
+                                                ]}
+                                                placeholder="Pilih perataan"
+                                                onChange={(e) => formikReward.setFieldValue("undian_font_align", e)}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <Label>Template Voucher <RequiredSymbol /></Label>
+                                            <div className="text-xs text-gray-500 mb-2">Gambar template ini yang dicetak kode incremental-nya saat user menukar (berbeda dari banner di atas).</div>
+                                            <div
+                                                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition
+                                                    ${dragActiveTemplate ? "border-primary-500 bg-primary-50" : "border-gray-300 dark:border-gray-600"}`}
+                                                onDragOver={(e) => {
+                                                    e.preventDefault();
+                                                    setDragActiveTemplate(true);
+                                                }}
+                                                onDragLeave={() => setDragActiveTemplate(false)}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    setDragActiveTemplate(false);
+                                                    const file = e.dataTransfer.files[0];
+                                                    if (file) handleVoucherTemplateUpload(file);
+                                                }}
+                                                onClick={() => voucherTemplateInputRef.current?.click()}
+                                            >
+                                                <p className="text-gray-600 dark:text-gray-300">
+                                                    Drag & Drop image here or <span className="text-primary-500">click to upload</span>
+                                                </p>
+                                                <input
+                                                    ref={voucherTemplateInputRef}
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) handleVoucherTemplateUpload(file);
+                                                    }}
+                                                />
+                                            </div>
+
+                                            {/* Preview + interactive position picker */}
+                                            {formikReward.values.undian_voucher_template && (
+                                                <VoucherTemplatePositioner
+                                                    src={formikReward.values.undian_voucher_template}
+                                                    x={formikReward.values.undian_text_x === "" ? "" : Number(formikReward.values.undian_text_x)}
+                                                    y={formikReward.values.undian_text_y === "" ? "" : Number(formikReward.values.undian_text_y)}
+                                                    fontSize={Number(formikReward.values.undian_font_size) || 48}
+                                                    fontColor={formikReward.values.undian_font_color || "#000000"}
+                                                    fontAlign={(formikReward.values.undian_font_align as "left" | "center" | "right") || "left"}
+                                                    sampleText={`${formikReward.values.undian_code_prefix || "UND-"}${String(1).padStart(Number(formikReward.values.undian_code_padding) || 4, "0")}`}
+                                                    onChange={(x, y) => {
+                                                        formikReward.setFieldValue("undian_text_x", x);
+                                                        formikReward.setFieldValue("undian_text_y", y);
+                                                    }}
+                                                />
+                                            )}
+
+                                            {formikReward.touched.undian_voucher_template && formikReward.errors.undian_voucher_template ? (
+                                                <div className="text-sm text-red-500">{formikReward.errors.undian_voucher_template}</div>
+                                            ) : null}
                                         </div>
                                     </div>
                                 )}

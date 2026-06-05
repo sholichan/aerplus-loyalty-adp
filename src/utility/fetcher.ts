@@ -11,9 +11,10 @@ export async function GetProduct(token: string) {
         });
         const json = await res.json()
 
-        return json.data;
+        return json?.data ?? [];
     } catch (err) {
         console.error('Fetcher.GetProduct', err)
         toast.error("Failed to load product list");
+        return [];
     }
 }

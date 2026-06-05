@@ -12,7 +12,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { clearToken } from "@/store/slices/authSlices";
 import { toast } from "react-toastify";
-import { CiEdit } from "react-icons/ci";
+import { CiEdit, CiViewList } from "react-icons/ci";
 import dayjs from "dayjs";
 import { getRewardTypeBadge } from "@/utility/mapper"
 
@@ -191,9 +191,14 @@ const RewardPage: React.FC = () => {
                                     </div>
                                 </TableCell>
                                 <TableCell className="p-3 text-theme-sm  text-gray-500 dark:text-gray-400">
-                                    <Button size="sm" onClick={() => router.push(`/reward/update/${r.uuid}`)} variant="primary">
-                                        <CiEdit />
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Button size="sm" onClick={() => router.push(`/reward/update/${r.uuid}`)} variant="primary">
+                                            <CiEdit />
+                                        </Button>
+                                        <Button size="sm" onClick={() => router.push(`/reward/redeems/${r.uuid}`)} variant="outline">
+                                            <CiViewList />
+                                        </Button>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         )

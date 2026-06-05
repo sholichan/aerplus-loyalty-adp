@@ -41,6 +41,21 @@ export function MapRewardPayload (values: any) {
                 },
             };
 
+        case "undian":
+            return {
+                ...basePayload,
+                detail: {
+                    code_prefix: values.undian_code_prefix,
+                    code_padding: values.undian_code_padding ? Number(values.undian_code_padding) : 4,
+                    text_x: Number(values.undian_text_x),
+                    text_y: Number(values.undian_text_y),
+                    font_size: values.undian_font_size ? Number(values.undian_font_size) : 48,
+                    font_color: values.undian_font_color || "#000000",
+                    font_align: values.undian_font_align || "left",
+                    voucher_template: values.undian_voucher_template,
+                },
+            };
+
         default:
             throw new Error("Invalid reward type");
     }
@@ -64,6 +79,12 @@ export function getRewardTypeBadge(type: string) {
             return {
                 label: "Merchandise",
                 color: "text-amber-800",
+            };
+
+        case "undian":
+            return {
+                label: "Undian",
+                color: "text-purple-700",
             };
 
         default:
