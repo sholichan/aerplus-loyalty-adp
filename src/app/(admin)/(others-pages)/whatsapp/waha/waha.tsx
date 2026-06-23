@@ -138,13 +138,21 @@ const WahaSessionPage: React.FC = () => {
         fetchWebhookInfo();
     }, [fetchStatus, fetchWebhookInfo]);
 
-    // Polling when status is SCAN_QR_CODE
+    // Polling saat status transien (STARTING / SCAN_QR_CODE) supaya panel
+    // auto-refresh sampai status final (WORKING/FAILED/STOPPED) — tidak nyangkut
+    // di "Menyiapkan..." saat WAHA baru start/restart.
     useEffect(() => {
+        const isTransient =
+            session?.status === "STARTING" || session?.status === "SCAN_QR_CODE";
         if (session?.status === "SCAN_QR_CODE") {
             fetchQr();
+        }
+        if (isTransient) {
             pollingRef.current = setInterval(() => {
                 fetchStatus();
-                fetchQr();
+                if (session?.status === "SCAN_QR_CODE") {
+                    fetchQr();
+                }
             }, 3000);
         } else {
             if (pollingRef.current) {
@@ -384,7 +392,7 @@ const WahaSessionPage: React.FC = () => {
                                 Start Session
                             </Button>
                         )}
-                        {session?.status === "FAILED" && (
+                        {(session?.status === "FAILED" || session?.status === "STARTING") && (
                             <Button
                                 onClick={handleRestart}
                                 disabled={loading}
