@@ -139,7 +139,10 @@ const othersItems: NavItem[] = [
   {
     icon: <IoSettingsOutline size={20} />,
     name: "WhatsApp",
-    path: "/whatsapp",
+    subItems: [
+      { name: "Session", path: "/whatsapp", pro: false },
+      { name: "WAHA", path: "/whatsapp/waha", pro: false },
+    ],
   },
   // {
   //   icon: <PieChartIcon />,
