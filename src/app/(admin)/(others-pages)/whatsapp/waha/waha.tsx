@@ -401,7 +401,7 @@ const WahaSessionPage: React.FC = () => {
                                 Restart Session
                             </Button>
                         )}
-                        {session?.status === "WORKING" && (
+                        {session && session.status !== "STOPPED" && (
                             <>
                                 <Button
                                     onClick={() =>
