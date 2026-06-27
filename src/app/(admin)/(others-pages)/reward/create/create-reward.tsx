@@ -144,13 +144,28 @@ const CreateReward: React.FC = () => {
         }
     }, [formikReward.submitCount, formikReward.errors]);
 
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"]
     const handleFileUpload = (file: File) => {
-        const reader = new FileReader();
+        // ✅ Validasi ukuran
+        if (file.size > MAX_FILE_SIZE) {
+            toast.error("Ukuran file maksimal 5MB")
+            return
+        }
+
+        // ✅ Validasi tipe file
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            toast.error("Format file harus JPG, PNG, atau WEBP")
+            return
+        }
+
+        // ✅ Kalau lolos validasi baru dibaca
+        const reader = new FileReader()
         reader.onloadend = () => {
             formikReward.setFieldValue("image", reader.result);
-        };
-        reader.readAsDataURL(file);
-    };
+        }
+        reader.readAsDataURL(file)
+    }
 
     useEffect(() => {
         const type = formikReward.values.type;
@@ -183,6 +198,19 @@ const CreateReward: React.FC = () => {
     }, [formikReward.values.type]);
 
     const handleVoucherTemplateUpload = (file: File) => {
+        // ✅ Validasi ukuran
+        if (file.size > MAX_FILE_SIZE) {
+            toast.error("Ukuran file maksimal 5MB")
+            return
+        }
+
+        // ✅ Validasi tipe file
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            toast.error("Format file harus JPG, PNG, atau WEBP")
+            return
+        }
+
+        // ✅ Kalau lolos validasi baru dibaca
         const reader = new FileReader();
         reader.onloadend = () => {
             formikReward.setFieldValue("undian_voucher_template", reader.result);
