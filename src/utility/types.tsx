@@ -13,6 +13,52 @@
 //     updated_at: string; // sama seperti di atas
 // };
 
+export interface ModulePermissionType {
+    id: string;
+    module: string;
+    can_create: boolean;
+    can_read: boolean;
+    can_update: boolean;
+    can_delete: boolean;
+}
+
+export interface PermissionType {
+    id: string;
+    module: string;
+    method: string;
+    path: string;
+    handler: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface ModuleType {
+    id: string;
+    name: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface RoleType {
+    id: string;
+    name: string;
+    permissions: PermissionType[];
+    module_permissions: ModulePermissionType[];
+    created_at: string;
+    updated_at: string;
+}
+
+export interface AdminUserType {
+    id: string;
+    user_name: string;
+    phone_number: string;
+    is_active: boolean;
+    role?: RoleType;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface UserType {
     id: string;
     user_name: string;

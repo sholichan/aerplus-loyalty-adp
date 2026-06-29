@@ -1,14 +1,26 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { jwtDecode } from "jwt-decode";
 
+export interface ModulePermission {
+  module: string;
+  can_create: boolean;
+  can_read: boolean;
+  can_update: boolean;
+  can_delete: boolean;
+}
+
 interface RoleType {
   id: string;
   name: string;
+  permissions: string[];
+  module_permissions: ModulePermission[];
 }
 
 interface UserPayload {
+  user_id: string;
   user_name: string;
   role: RoleType;
+  permissions: string[];
   exp: number;
 }
 
@@ -27,11 +39,9 @@ const isTokenValid = (token: string): boolean => {
   }
 };
 
-const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
 const initialState: AuthState = {
-  token: token && isTokenValid(token) ? token : null,
-  user: token && isTokenValid(token) ? jwtDecode<UserPayload>(token) : null,
+  token: null,
+  user: null,
 };
 
 export const authSlice = createSlice({

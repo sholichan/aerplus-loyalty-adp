@@ -6,38 +6,15 @@ import TopUserOrders from "@/components/ecommerce/TopUserOrders";
 import DailyRefillChart from "@/components/ecommerce/DailyRefillChart";
 import DatePicker from "@/components/form/date-picker";
 import { RootState } from "@/store";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
-import { useDispatch } from "react-redux";
-import { clearToken } from "@/store/slices/authSlices";
-import { toast } from "react-toastify";
-
 export default function Dashboard() {
-    const dispatch = useDispatch()
-
-    const [isLoading, setIsLoading] = useState<boolean>(true)
+    const [isLoading] = useState<boolean>(false)
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
 
     const auth = useSelector((state: RootState) => state.auth);
-    const router = useRouter()
-
-    useEffect(() => {
-        const now = Date.now() / 1000;
-        let exp = true
-        if (auth.user?.exp !== undefined) exp = now > auth.user?.exp
-        if (auth.user?.role.name !== "super admin" || exp) {
-            localStorage.clear()
-            dispatch(clearToken())
-            router.push("/signin")
-            toast.warn("Your session has expired, please login!")
-        } else {
-            setIsLoading(!isLoading)
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [auth.token, router])
 
     useEffect(() => {
         const now = new Date();
@@ -50,7 +27,7 @@ export default function Dashboard() {
 
         setStartDate(formatDate(firstDay));
         setEndDate(formatDate(lastDay));
-    }, [auth.token, router]);
+    }, [auth.token]);
 
     return (
         isLoading ?

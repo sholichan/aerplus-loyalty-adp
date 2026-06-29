@@ -2,11 +2,10 @@
 
 import { PulseLoading } from "@/components/common/loading";
 import Input from "@/components/form/input/InputField";
-import Label from "@/components/form/Label";
 import TextArea from "@/components/form/input/TextArea";
+import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { RootState } from "@/store";
-import { clearToken } from "@/store/slices/authSlices";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -46,18 +45,7 @@ const Pic: React.FC = () => {
     return form.image;
   }, [assetBaseUrl, form.image]);
 
-  useEffect(() => {
-    const now = Date.now() / 1000;
-    let exp = true;
-    if (auth.user?.exp !== undefined) exp = now > auth.user?.exp;
-    if (auth.user?.role.name !== "super admin" || exp) {
-      localStorage.clear();
-      dispatch(clearToken());
-      router.push("/signin");
-      toast.warn("Your session has expired, please login!");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth.token, router]);
+  
 
   useEffect(() => {
     const fetchExisting = async () => {

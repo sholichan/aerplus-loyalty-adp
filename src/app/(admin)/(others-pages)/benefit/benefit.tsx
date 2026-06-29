@@ -12,8 +12,8 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import * as Yup from "yup";
 
+import PermissionGuard from "@/components/auth/PermissionGuard";
 import { useDispatch } from "react-redux";
-import { clearToken } from "@/store/slices/authSlices";
 
 const Benefit: React.FC = () => {
     const dispatch = useDispatch()
@@ -29,18 +29,7 @@ const Benefit: React.FC = () => {
     const router = useRouter()
     const auth = useSelector((state: RootState) => state.auth);
 
-    useEffect(() => {
-        const now = Date.now() / 1000;
-        let exp = true
-        if (auth.user?.exp !== undefined) exp = now > auth.user?.exp
-        if (auth.user?.role.name !== "super admin" || exp) {
-            localStorage.clear()
-            dispatch(clearToken())
-            router.push("/signin")
-            toast.warn("Your session has expired, please login!")
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [auth.token, router])
+
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -160,15 +149,17 @@ const Benefit: React.FC = () => {
                         <>
                             <div className="lg:text-8xl text-4xl font-bold text-white drop-shadow-lg">{toCurrency(benfitData?.value)}</div>
                             <p className="text-blue-100 text-2xl font-semibold">by {benfitData.type}</p>
-                            <Button
-                                onClick={() => {
-                                    formikUpdate.setFieldValue("id", benfitData?.id)
-                                    setIsEditing(true)
-                                }}
-                                className="bg-white/20 hover:bg-white/30 text-white border-white/30 mt-4"
-                            >
-                                Update Benefit
-                            </Button>
+                            <PermissionGuard module="benefit" action="update">
+                                <Button
+                                    onClick={() => {
+                                        formikUpdate.setFieldValue("id", benfitData?.id)
+                                        setIsEditing(true)
+                                    }}
+                                    className="bg-white/20 hover:bg-white/30 text-white border-white/30 mt-4"
+                                >
+                                    Update Benefit
+                                </Button>
+                            </PermissionGuard>
                         </>
                     )}
 

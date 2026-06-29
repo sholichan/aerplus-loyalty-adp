@@ -63,13 +63,16 @@ const RedeemListPage: React.FC = () => {
      */
     useEffect(() => {
         if (!auth.token) return;
+        console.log(
+            `${API_URL}admin/redeem/list/reward/${uuid}?page=${currentPage}&limit=10`
+        );
 
         const fetchRedeems = async () => {
             setIsLoading(true);
 
             try {
                 const response = await fetch(
-                    `${API_URL}/admin/redeem/list/reward/${uuid}?page=${currentPage}&limit=10`,
+                    `${API_URL}admin/redeem/list/reward/${uuid}?page=${currentPage}&limit=10`,
                     {
                         method: "GET",
                         headers: {

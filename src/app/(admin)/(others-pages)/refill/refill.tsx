@@ -3,7 +3,6 @@
 import { PulseLoading } from "@/components/common/loading";
 import DatePicker from "@/components/form/date-picker";
 import Input from "@/components/form/input/InputField";
-import Pagination from "@/components/tables/Pagination";
 import LimitPagination from "@/components/tables/LimitPagination";
 import TableBasic from "@/components/tables/Table";
 import { Modal } from "@/components/ui/modal";
@@ -11,12 +10,10 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { useOutlet } from "@/context/OutletContext";
 import { useModal } from "@/hooks/useModal";
 import { RootState } from "@/store";
-import { clearToken } from "@/store/slices/authSlices";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
 
 type RefillDailyRow = {
     day: string;
@@ -66,20 +63,7 @@ const RefillPage: React.FC = () => {
     const [isDetailLoading, setIsDetailLoading] = useState<boolean>(false);
     const [detailError, setDetailError] = useState<string>("");
 
-    useEffect(() => {
-        const now = Date.now() / 1000;
-        let exp = true;
-        if (auth.user?.exp !== undefined) exp = now > auth.user.exp;
-        if (auth.user?.role.name !== "super admin" || exp) {
-            localStorage.clear();
-            dispatch(clearToken());
-            router.push("/signin");
-            toast.warn("Your session has expired, please login!");
-        } else {
-            setRefresh((prev) => !prev);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [auth.token, router]);
+    
 
     useEffect(() => {
         const now = new Date();

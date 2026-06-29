@@ -1,5 +1,6 @@
 "use client";
 
+import PermissionGuard from "@/components/auth/PermissionGuard";
 import { PulseLoading } from "@/components/common/loading";
 import Input from "@/components/form/input/InputField";
 import Pagination from "@/components/tables/Pagination";
@@ -33,20 +34,7 @@ const Spv: React.FC = () => {
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-    useEffect(() => {
-        const now = Date.now() / 1000;
-        let exp = true;
-        if (auth.user?.exp !== undefined) exp = now > auth.user?.exp;
-        if (auth.user?.role.name !== "super admin" || exp) {
-            localStorage.clear();
-            dispatch(clearToken());
-            router.push("/signin");
-            toast.warn("Your session has expired, please login!");
-        } else {
-            setRefresh(!refresh);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [auth.token, router]);
+
 
     useEffect(() => {
         setPrevSeloutlet(selectedOutlet);
@@ -144,11 +132,13 @@ const Spv: React.FC = () => {
                     </button>
                 </div>
 
-                <button
-                    className="px-4 py-2 w-full md:w-fit rounded-lg bg-blue-500 text-white text-sm hover:bg-blue-600"
-                >
-                    Add SPV
-                </button>
+                <PermissionGuard module="spv" action="create">
+                    <button
+                        className="px-4 py-2 w-full md:w-fit rounded-lg bg-blue-500 text-white text-sm hover:bg-blue-600"
+                    >
+                        Add SPV
+                    </button>
+                </PermissionGuard>
             </div>
 
             <div className="p-4 border-t border-gray-100 dark:border-gray-800 sm:p-6">

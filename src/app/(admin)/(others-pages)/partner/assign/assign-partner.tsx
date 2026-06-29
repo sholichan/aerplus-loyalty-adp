@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { PulseLoading } from "@/components/common/loading";
 import Button from "@/components/ui/button/Button";
@@ -56,19 +56,7 @@ const AssignPartner: React.FC = () => {
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-  useEffect(() => {
-    const now = Date.now() / 1000;
-    const tokenExpired = auth.user?.exp ? now > auth.user.exp : true;
-    const notSuperAdmin = auth.user?.role.name !== "super admin";
-
-    if (tokenExpired || notSuperAdmin) {
-      localStorage.clear();
-      dispatch(clearToken());
-      router.push("/signin");
-      toast.warn("Your session has expired. Please sign in again!");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth.token]);
+  
 
   useEffect(() => {
     const fetchPartnerGrouped = async () => {

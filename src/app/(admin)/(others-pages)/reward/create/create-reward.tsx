@@ -34,11 +34,6 @@ const CreateReward: React.FC = () => {
     const auth = useSelector((state: RootState) => state.auth);
 
     useEffect(() => {
-        if (auth.user?.role.name !== "super admin") {
-            router.push("/signin")
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-
         const fetchProduct = async () => {
             const products = await GetProduct(auth.token as string)
             setBogoOptions((products ?? []).map((product: any) => {
@@ -50,7 +45,7 @@ const CreateReward: React.FC = () => {
         }
 
         fetchProduct()
-    }, [auth.token, router])
+    }, [auth.token])
 
     const formikReward = useFormik({
         initialValues: {

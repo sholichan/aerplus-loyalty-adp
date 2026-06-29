@@ -5,179 +5,66 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { BiCoinStack } from "react-icons/bi";
-import { GrUserWorker } from "react-icons/gr";
-import { BsPeople } from "react-icons/bs";
-import { FiShoppingCart } from "react-icons/fi";
-import { PiFlagBannerFold } from "react-icons/pi";
+import { useSelector } from "react-redux";
 import { useSidebar } from "../context/SidebarContext";
-import { BsShopWindow } from "react-icons/bs";
-import { IoSettingsOutline } from "react-icons/io5";
-import { FaGift } from "react-icons/fa";
-import { BsDroplet } from "react-icons/bs";
 
 import {
   ChevronDownIcon,
-  GridIcon,
   HorizontaLDots
 } from "../icons/index";
+import { RootState } from "@/store";
+import {
+  mainNavItems,
+  otherNavItems,
+  NavItem,
+  RoleName,
+} from "./sidebar-menu.config";
 
-type NavItem = {
-  name: string;
-  icon: React.ReactNode;
-  path?: string;
-  subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
-};
-
-const navItems: NavItem[] = [
-  {
-    icon: <GridIcon />,
-    name: "Dashboard",
-    path: "/",
-    // subItems: [{ name: "Ecommerce", path: "/", pro: false }],
-  },
-  {
-    icon: <BsPeople size={20} />,
-    name: "User",
-    path: "/",
-    subItems: [
-      { name: "Member", path: "/memberNew", pro: false },
-      { name: "Partner", path: "/partner", pro: false },
-      { name: "SPV", path: "/spv", pro: false },
-    ],
-  },
-  // {
-  //   icon: <BsPeople size={20} />,
-  //   name: "Member",
-  //   path: "/member",
-  // },
-  // {
-  //   icon: <BsPeople size={20} />,
-  //   name: "Vouchers",
-  //   path: "/voucher",
-  // },
-  {
-    icon: <FaGift size={20} />,
-    name: "Rewards",
-    path: "/reward",
-  },
-  {
-    icon: <FiShoppingCart size={20} />,
-    name: "Orders",
-    path: "/order",
-  },
-  {
-    icon: <FiShoppingCart size={20} />,
-    name: "Shop",
-    path: "/shop",
-  },
-  {
-    icon: <BsDroplet size={20} />,
-    name: "Refill",
-    path: "/refill",
-  },
-  {
-    icon: <PiFlagBannerFold size={20} />,
-    name: "Banners",
-    path: "/banner",
-  },
-  {
-    icon: <BsShopWindow size={20} />,
-    name: "Outlets",
-    path: "/outlet",
-  },
-  // {
-  //   icon: <CalenderIcon />,
-  //   name: "Calendar",
-  //   path: "/calendar",
-  // },
-  // {
-  //   icon: <UserCircleIcon />,
-  //   name: "User Profile",
-  //   path: "/profile",
-  // },
-
-  // {
-  //   name: "Forms",
-  //   icon: <ListIcon />,
-  //   subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
-  // },
-  // {
-  //   name: "Tables",
-  //   icon: <TableIcon />,
-  //   subItems: [
-  //     { name: "Basic Tables", path: "/basic-tables", pro: false },
-  //     { name: "Pagination", path: "/pagination", pro: false },
-  //   ],
-  // },
-  // {
-  //   name: "Pages",
-  //   icon: <PageIcon />,
-  //   subItems: [
-  //     { name: "Blank Page", path: "/blank", pro: false },
-  //     { name: "404 Error", path: "/error-404", pro: false },
-  //   ],
-  // },
-];
-
-const othersItems: NavItem[] = [
-  {
-    icon: <GrUserWorker size={20} />,
-    name: "PIC",
-    path: "/pic",
-  },
-  {
-    icon: <BiCoinStack size={20} />,
-    name: "Point",
-    path: "/point",
-  },
-  {
-    icon: <BiCoinStack size={20} />,
-    name: "Benefit",
-    path: "/benefit",
-  },
-  {
-    icon: <IoSettingsOutline size={20} />,
-    name: "WhatsApp",
-    subItems: [
-      { name: "Session", path: "/whatsapp", pro: false },
-      { name: "WAHA", path: "/whatsapp/waha", pro: false },
-    ],
-  },
-  // {
-  //   icon: <PieChartIcon />,
-  //   name: "Charts",
-  //   subItems: [
-  //     { name: "Line Chart", path: "/line-chart", pro: false },
-  //     { name: "Bar Chart", path: "/bar-chart", pro: false },
-  //   ],
-  // },
-  // {
-  //   icon: <BoxCubeIcon />,
-  //   name: "UI Elements",
-  //   subItems: [
-  //     { name: "Alerts", path: "/alerts", pro: false },
-  //     { name: "Avatar", path: "/avatars", pro: false },
-  //     { name: "Badge", path: "/badge", pro: false },
-  //     { name: "Buttons", path: "/buttons", pro: false },
-  //     { name: "Images", path: "/images", pro: false },
-  //     { name: "Videos", path: "/videos", pro: false },
-  //   ],
-  // },
-  // {
-  //   icon: <PlugInIcon />,
-  //   name: "Authentication",
-  //   subItems: [
-  //     { name: "Sign In", path: "/signin", pro: false },
-  //     { name: "Sign Up", path: "/signup", pro: false },
-  //   ],
-  // },
-];
+const SUPER_ADMIN = "super admin";
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
   const { selectedOutlet, setSelectedOutlet } = useOutlet();
+  const auth = useSelector((state: RootState) => state.auth);
+  const currentRole = (auth.user?.role?.name ?? "") as RoleName;
+  const isSuperAdmin = currentRole.toLowerCase() === SUPER_ADMIN;
+  const modulePermissions = auth.user?.role?.module_permissions ?? [];
+
+  /** Apakah item sidebar boleh ditampilkan untuk user saat ini */
+  const canSeeItem = useCallback(
+    (item: { module?: string; superAdminOnly?: boolean }) => {
+      // item khusus super admin
+      if (item.superAdminOnly) return isSuperAdmin;
+      // super admin lihat semua
+      if (isSuperAdmin) return true;
+      // tanpa module → selalu tampil
+      if (!item.module) return true;
+      // cek can_read pada module_permissions
+      const mp = modulePermissions.find(
+        (p) => p.module.toLowerCase() === item.module!.toLowerCase()
+      );
+      return mp?.can_read ?? false;
+    },
+    [isSuperAdmin, modulePermissions]
+  );
+
+  const filteredNavItems = mainNavItems
+    .map((nav) => {
+      if (!canSeeItem(nav)) return null;
+
+      if (!nav.subItems) return nav;
+
+      const filteredSubItems = nav.subItems.filter((subItem) =>
+        canSeeItem(subItem)
+      );
+
+      if (filteredSubItems.length === 0 && !nav.path) return null;
+      return { ...nav, subItems: filteredSubItems };
+    })
+    .filter((item): item is NavItem => item !== null);
+
+  const filteredOthersItems = otherNavItems.filter((item) => canSeeItem(item));
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -312,7 +199,7 @@ const AppSidebar: React.FC = () => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
     ["main", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : othersItems;
+      const items = menuType === "main" ? filteredNavItems : filteredOthersItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
@@ -426,7 +313,7 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(navItems, "main")}
+              {renderMenuItems(filteredNavItems, "main")}
             </div>
 
             <div className="">
@@ -442,7 +329,7 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(othersItems, "others")}
+              {renderMenuItems(filteredOthersItems, "others")}
             </div>
           </div>
         </nav>

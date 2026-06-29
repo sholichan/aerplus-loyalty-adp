@@ -1,22 +1,18 @@
 "use client";
 
+import PermissionGuard from "@/components/auth/PermissionGuard";
 import Input from "@/components/form/input/InputField";
 import Button from "@/components/ui/button/Button";
 import { RootState } from "@/store";
 import { PointType } from "@/utility/types";
 import dayjs from "dayjs";
 import { useFormik } from "formik";
-import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import * as Yup from "yup";
 
-import { useDispatch } from "react-redux";
-import { clearToken } from "@/store/slices/authSlices";
-
 const Point: React.FC = () => {
-    const dispatch = useDispatch()
     const [pointData, setPointData] = useState<PointType>({
         id: "",
         point: 0,
@@ -24,28 +20,29 @@ const Point: React.FC = () => {
         updated_at: "",
     });
     const [isEditing, setIsEditing] = useState(false);
-    const router = useRouter()
     const auth = useSelector((state: RootState) => state.auth);
 
-    useEffect(() => {
-        const now = Date.now() / 1000;
-        let exp = true
-        if (auth.user?.exp !== undefined) exp = now > auth.user?.exp
-        if (auth.user?.role.name !== "super admin" || exp) {
-            localStorage.clear()
-            dispatch(clearToken())
-            router.push("/signin")
-            toast.warn("Your session has expired, please login!")
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [auth.token, router])
+
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
         const fetchPoint = async () => {
             try {
-                const response = await fetch(`${API_URL}/point`);
+                const response = await fetch(`${API_URL}point`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${auth.token}`,
+                    },
+                });
+
+                const contentType = response.headers.get("content-type");
+                if (!response.ok || !contentType || !contentType.includes("application/json")) {
+                    toast.warning("Failed to load point data");
+                    return;
+                }
+
                 const res = await response.json();
                 setPointData(res.data[0]);
                 //console.log(res.data);
@@ -73,13 +70,23 @@ const Point: React.FC = () => {
             try {
                 const response = await fetch(`${API_URL}/point/create`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${auth.token}`,
+                    },
                     body: JSON.stringify(values),
                 });
+
+                const contentType = response.headers.get("content-type");
+                if (!response.ok || !contentType || !contentType.includes("application/json")) {
+                    toast.warning("Update additional point failed!");
+                    return;
+                }
+
                 const res = await response.json();
                 if (res.statusCode === 200) {
 
-                    toast.success("Update additional point success!");
+                    toast.success("Update point success!");
                     setPointData((prev: PointType) => ({ ...prev, ...values }));
                     setIsEditing(false); // close after save
                     console.log(pointData);
@@ -137,15 +144,17 @@ const Point: React.FC = () => {
                         <>
                             <div className="text-8xl font-bold text-white drop-shadow-lg">{pointData?.point}</div>
                             <p className="text-blue-100 text-lg">Points</p>
-                            <Button
-                                onClick={() => {
-                                    formikUpdate.setFieldValue("id", pointData?.id)
-                                    setIsEditing(true)
-                                }}
-                                className="bg-white/20 hover:bg-white/30 text-white border-white/30 mt-4"
-                            >
-                                Update Point
-                            </Button>
+                            <PermissionGuard module="point" action="update">
+                                <Button
+                                    onClick={() => {
+                                        formikUpdate.setFieldValue("id", pointData?.id)
+                                        setIsEditing(true)
+                                    }}
+                                    className="bg-white/20 hover:bg-white/30 text-white border-white/30 mt-4"
+                                >
+                                    Update Point
+                                </Button>
+                            </PermissionGuard>
                         </>
                     )}
 

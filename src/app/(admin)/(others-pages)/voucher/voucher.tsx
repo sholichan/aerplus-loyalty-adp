@@ -44,20 +44,7 @@ const Voucher: React.FC = () => {
     const router = useRouter()
     const auth = useSelector((state: RootState) => state.auth);
 
-    useEffect(() => {
-        const now = Date.now() / 1000;
-        let exp = true
-        if (auth.user?.exp !== undefined) exp = now > auth.user?.exp
-        if (auth.user?.role.name !== "super admin" || exp) {
-            localStorage.clear()
-            dispatch(clearToken())
-            router.push("/signin")
-            toast.warn("Your session has expired, please login!")
-        } else {
-            setRefresh(!refresh)
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [auth.token, router])
+    
 
 
     useEffect(() => {

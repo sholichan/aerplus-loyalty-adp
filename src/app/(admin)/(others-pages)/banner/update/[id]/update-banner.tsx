@@ -59,15 +59,6 @@ const UpdateBanner = ({ id }: BannerId) => {
     const router = useRouter()
     const auth = useSelector((state: RootState) => state.auth);
 
-    useEffect(() => {
-        if (auth.user?.role.name !== "super admin") {
-            router.push("/signin")
-        } else {
-            setRefresh(!refresh)
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [auth.token, router])
-
     const formikCreateUpdate = useFormik({
         initialValues: {
             id: "",

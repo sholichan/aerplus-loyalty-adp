@@ -100,21 +100,7 @@ export default function UserOrderTable() {
     };
 
     // Authentication guard
-    useEffect(() => {
-        const now = Date.now() / 1000;
-        const tokenExpired = auth.user?.exp ? now > auth.user.exp : true;
-        const notSuperAdmin = auth.user?.role.name !== "super admin";
-
-        if (tokenExpired || notSuperAdmin) {
-            localStorage.clear();
-            dispatch(clearToken());
-            router.push("/signin");
-            toast.warn("Your session has expired. Please sign in again!");
-        } else {
-            setRefresh(!refresh);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [auth.token]);
+    
 
     // Fetch users
     useEffect(() => {

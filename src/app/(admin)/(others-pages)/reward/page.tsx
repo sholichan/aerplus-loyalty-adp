@@ -1,20 +1,19 @@
 "use client";
 
+import PermissionGuard from "@/components/auth/PermissionGuard";
 import { PulseLoading } from "@/components/common/loading";
 import Input from "@/components/form/input/InputField";
 import Pagination from "@/components/tables/Pagination";
 import TableBasic from "@/components/tables/Table";
-import { TableCell, TableRow } from "@/components/ui/table";
 import Button from "@/components/ui/button/Button";
+import { TableCell, TableRow } from "@/components/ui/table";
 import { RootState } from "@/store";
+import { getRewardTypeBadge } from "@/utility/mapper";
+import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { clearToken } from "@/store/slices/authSlices";
-import { toast } from "react-toastify";
 import { CiEdit, CiViewList } from "react-icons/ci";
-import dayjs from "dayjs";
-import { getRewardTypeBadge } from "@/utility/mapper"
+import { useDispatch, useSelector } from "react-redux";
 
 type RewardType = {
     id: number;
@@ -23,7 +22,7 @@ type RewardType = {
     type: string;
     point_eligibility: number;
     status: string;
-    image   : string;
+    image: string;
     created_at: string;
 };
 
@@ -45,22 +44,7 @@ const RewardPage: React.FC = () => {
     /**
      * AUTH GUARD
      */
-    useEffect(() => {
-        const now = Date.now() / 1000;
-        let exp = false;
 
-        if (auth.user?.exp !== undefined) {
-            exp = now > auth.user?.exp;
-        }
-
-        if (!auth.token || exp) {
-            localStorage.clear();
-            dispatch(clearToken());
-            router.push("/signin");
-            toast.warn("Your session has expired, please login!");
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [auth.token]);
 
     /**
      * FETCH REWARD LIST
@@ -152,59 +136,63 @@ const RewardPage: React.FC = () => {
                 </div>
 
                 {/* Create Button */}
-                <button
-                    onClick={() => router.push("/reward/create")}
-                    className="px-4 py-2 rounded-lg bg-blue-500 text-white text-sm hover:bg-blue-600"
-                >
-                    + Create Reward
-                </button>
+                <PermissionGuard module="reward" action="create">
+                    <button
+                        onClick={() => router.push("/reward/create")}
+                        className="px-4 py-2 rounded-lg bg-blue-500 text-white text-sm hover:bg-blue-600"
+                    >
+                        + Create Reward
+                    </button>
+                </PermissionGuard>
             </div>
 
             {/* Table */}
             <div className="p-4 border-t sm:p-6">
                 <TableBasic header={header} isSetMinW="none">
                     {
-                    tableData.map((r, index) => {
-                        const badge = getRewardTypeBadge(r.type);
+                        tableData.map((r, index) => {
+                            const badge = getRewardTypeBadge(r.type);
 
-                        return (
-                            <TableRow key={r.uuid}>
-                                <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    {(currentPage - 1) * 10 + (index + 1)}
-                                </TableCell>
-                                <TableCell className="p-3 text-blue-500 text-start text-theme-sm dark:text-blue-400">
-                                    <a href={API_URL?.replaceAll('/api/', '') + r.image} target="_blank">{r.name}</a>
-                                </TableCell>
-                                <TableCell className={`p-3 ${badge.color} text-start text-theme-sm dark:text-gray-400`}>{badge.label}</TableCell>
-                                <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400"><b>{r.point_eligibility}</b></TableCell>
-                                <TableCell className={r.status === 'active' ? "p-3 text-green-500 text-start text-theme-sm dark:text-green-400" : "p-3 text-red-500 text-start text-theme-sm dark:text-green-400"}>
-                                    {r.status === "active" ? "Active" : "Inactive"}
-                                </TableCell>
-                                <TableCell className="p-3 text-theme-sm  text-gray-500 dark:text-gray-400">
-                                    <div className="rounded-sm">
-                                        <span className="block text-theme-sm">
-                                            {dateConvert(r.created_at)}
-                                        </span>
-                                        <span className="block text-theme-xs">
-                                            {timeConvert(r.created_at)}
-                                        </span>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="p-3 text-theme-sm  text-gray-500 dark:text-gray-400">
-                                    <div className="flex gap-2">
-                                        <Button size="sm" onClick={() => router.push(`/reward/update/${r.uuid}`)} variant="primary">
-                                            <CiEdit />
-                                        </Button>
-                                        <Button size="sm" onClick={() => router.push(`/reward/redeems/${r.uuid}`)} variant="outline">
-                                            <CiViewList />
-                                        </Button>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        )
-                    })
-                }
-                
+                            return (
+                                <TableRow key={r.uuid}>
+                                    <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                        {(currentPage - 1) * 10 + (index + 1)}
+                                    </TableCell>
+                                    <TableCell className="p-3 text-blue-500 text-start text-theme-sm dark:text-blue-400">
+                                        <a href={API_URL?.replaceAll('/api/', '') + r.image} target="_blank">{r.name}</a>
+                                    </TableCell>
+                                    <TableCell className={`p-3 ${badge.color} text-start text-theme-sm dark:text-gray-400`}>{badge.label}</TableCell>
+                                    <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400"><b>{r.point_eligibility}</b></TableCell>
+                                    <TableCell className={r.status === 'active' ? "p-3 text-green-500 text-start text-theme-sm dark:text-green-400" : "p-3 text-red-500 text-start text-theme-sm dark:text-green-400"}>
+                                        {r.status === "active" ? "Active" : "Inactive"}
+                                    </TableCell>
+                                    <TableCell className="p-3 text-theme-sm  text-gray-500 dark:text-gray-400">
+                                        <div className="rounded-sm">
+                                            <span className="block text-theme-sm">
+                                                {dateConvert(r.created_at)}
+                                            </span>
+                                            <span className="block text-theme-xs">
+                                                {timeConvert(r.created_at)}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="p-3 text-theme-sm  text-gray-500 dark:text-gray-400">
+                                        <div className="flex gap-2">
+                                            <PermissionGuard module="reward" action="update">
+                                                <Button size="sm" onClick={() => router.push(`/reward/update/${r.uuid}`)} variant="primary">
+                                                    <CiEdit />
+                                                </Button>
+                                            </PermissionGuard>
+                                            <Button size="sm" onClick={() => router.push(`/reward/redeems/${r.uuid}`)} variant="outline">
+                                                <CiViewList />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })
+                    }
+
                 </TableBasic>
 
                 <div className="flex justify-end mt-4">

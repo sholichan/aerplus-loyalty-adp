@@ -10,14 +10,12 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { useOutlet } from "@/context/OutletContext";
 import { useModal } from "@/hooks/useModal";
 import { RootState } from "@/store";
-import { clearToken } from "@/store/slices/authSlices";
+import { paymentLabel, paymentStyles, statusLabel, statusStyles } from "@/utility/enum";
 import { ShopOrderType } from "@/utility/types";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
-import { statusStyles, statusLabel, paymentStyles, paymentLabel } from "@/utility/enum";
 
 const ShopPage: React.FC = () => {
     const dispatch = useDispatch();
@@ -41,20 +39,7 @@ const ShopPage: React.FC = () => {
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-    useEffect(() => {
-        const now = Date.now() / 1000;
-        let exp = true;
-        if (auth.user?.exp !== undefined) exp = now > auth.user?.exp;
-        if (auth.user?.role.name !== "super admin" || exp) {
-            localStorage.clear();
-            dispatch(clearToken());
-            router.push("/signin");
-            toast.warn("Your session has expired, please login!");
-        } else {
-            setRefresh(!refresh);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [auth.token, router]);
+    
 
     useEffect(() => {
         const now = new Date();

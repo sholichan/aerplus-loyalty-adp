@@ -37,13 +37,6 @@ const UpdateReward: React.FC = () => {
     const rewardId = params.id as string;
 
     useEffect(() => {
-        if (auth.user?.role.name !== "super admin") {
-            router.push("/signin")
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [auth.token, router])
-
-    useEffect(() => {
         if (!rewardId) return;
 
         const fetchReward = async () => {

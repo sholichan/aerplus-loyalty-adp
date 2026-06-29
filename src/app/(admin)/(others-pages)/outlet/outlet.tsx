@@ -21,6 +21,7 @@ import { BiQr } from "react-icons/bi";
 import { QRCodeCanvas } from "qrcode.react";
 
 import { sanitizeFilename } from "@/utility/mapper";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
 
 const Outlet: React.FC = () => {
@@ -42,20 +43,7 @@ const Outlet: React.FC = () => {
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-    useEffect(() => {
-        const now = Date.now() / 1000;
-        let exp = true
-        if (auth.user?.exp !== undefined) exp = now > auth.user?.exp
-        if (auth.user?.role.name !== "super admin" || exp) {
-            localStorage.clear()
-            dispatch(clearToken())
-            router.push("/signin")
-            toast.warn("Your session has expired, please login!")
-        } else {
-            setRefresh(!refresh)
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [auth.token, router])
+
 
     useEffect(() => {
         if (auth.token) {
@@ -112,7 +100,7 @@ const Outlet: React.FC = () => {
         const sideMargin = 24
         const topPadding = 24
         const lineOneParts = ['Depot Aerplus', selectedOutlet.name.replace('Aerplus ', '')]
-            console.info('lineOneParts', lineOneParts)
+        console.info('lineOneParts', lineOneParts)
 
         const exportCanvas = document.createElement("canvas")
         exportCanvas.width = qrCanvas.width + (horizontalPadding * 2)
@@ -257,13 +245,16 @@ const Outlet: React.FC = () => {
                             Search
                         </button>
                     </div>
-                    <Button
-                        className="md:w-fit w-full"
-                        size="sm"
-                        variant="primary"
-                        onClick={syncOutletHandle}>
-                        Sync Outlet
-                    </Button>
+
+                    <PermissionGuard module="outlet" action="update">
+                        <Button
+                            className="md:w-fit w-full"
+                            size="sm"
+                            variant="primary"
+                            onClick={syncOutletHandle}>
+                            Sync Outlet
+                        </Button>
+                    </PermissionGuard>
                 </div>
                 <div className="p-4 border-t border-gray-100 dark:border-gray-800 sm:p-6">
                     <div className="space-y-6">

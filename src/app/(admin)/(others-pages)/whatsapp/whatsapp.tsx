@@ -12,6 +12,7 @@ import { TbDeviceDesktopCheck, TbDeviceDesktopX } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import Image from "next/image";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
 // API URL
 
@@ -28,20 +29,7 @@ const WhatsAppSessionPage: React.FC = () => {
         () => () => { },
     );
 
-    useEffect(() => {
-        const now = Date.now() / 1000;
-        let exp = true
-        if (auth.user?.exp !== undefined) exp = now > auth.user?.exp
-        if (auth.user?.role.name !== "super admin" || exp) {
-            localStorage.clear()
-            dispatch(clearToken())
-            router.push("/signin")
-            toast.warn("Your session has expired, please login!")
-        } else {
-            setRefresh(!refresh)
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [auth.token, router])
+
 
     useEffect(() => {
         const fetchSession = async () => {
@@ -140,24 +128,28 @@ const WhatsAppSessionPage: React.FC = () => {
                 </div>
                 {
                     sessions ?
-                        <Button
-                            onClick={
-                                () => {
-                                    setDeleteFunction(() => () => handleDeleteSession())
-                                    openModal()
+                        <PermissionGuard module="whatsapp" action="delete">
+                            <Button
+                                onClick={
+                                    () => {
+                                        setDeleteFunction(() => () => handleDeleteSession())
+                                        openModal()
+                                    }
                                 }
-                            }
-                            className="bg-white/20 hover:bg-white/30 text-white border-white/30 mt-4"
-                        >
-                            Delete Session
-                        </Button>
+                                className="bg-white/20 hover:bg-white/30 text-white border-white/30 mt-4"
+                            >
+                                Delete Session
+                            </Button>
+                        </PermissionGuard>
                         :
-                        <Button
-                            onClick={handleCreateSession}
-                            className="bg-white/20 hover:bg-white/30 text-white border-white/30 mt-4"
-                        >
-                            Create Session
-                        </Button>
+                        <PermissionGuard module="whatsapp" action="create">
+                            <Button
+                                onClick={handleCreateSession}
+                                className="bg-white/20 hover:bg-white/30 text-white border-white/30 mt-4"
+                            >
+                                Create Session
+                            </Button>
+                        </PermissionGuard>
                 }
             </div>}
             {qrImage && (
