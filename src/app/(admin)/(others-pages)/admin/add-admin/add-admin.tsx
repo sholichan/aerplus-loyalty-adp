@@ -4,36 +4,31 @@ import { PulseLoading } from "@/components/common/loading";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
-import { Modal } from "@/components/ui/modal";
-import { useModal } from "@/hooks/useModal";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
 import { RootState } from "@/store";
 import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import * as Yup from "yup";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 type RoleItem = {
+    id: string;
     name: string;
 };
 
 const AddAdmin = () => {
-    const dispatch = useDispatch();
     const router = useRouter();
     const auth = useSelector((state: RootState) => state.auth);
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [isCreateRoleLoading, setIsCreateRoleLoading] = useState(false);
-    const [newRoleName, setNewRoleName] = useState("");
     const [roleOptions, setRoleOptions] = useState<{ value: string; label: string }[]>([]);
     const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
     const [roleSearch, setRoleSearch] = useState("");
     const roleDropdownRef = useRef<HTMLDivElement>(null);
-    const { isOpen: isAddRoleOpen, openModal: openAddRoleModal, closeModal: closeAddRoleModal } = useModal();
 
     const filteredRoleOptions = useMemo(
         () =>
@@ -47,12 +42,12 @@ const AddAdmin = () => {
         initialValues: {
             user_name: "",
             password: "",
-            role: "",
+            role_id: "",
         },
         validationSchema: Yup.object({
             user_name: Yup.string().required("Field can't be empty"),
             password: Yup.string().required("Field can't be empty"),
-            role: Yup.string().required("Field can't be empty"),
+            role_id: Yup.string().required("Field can't be empty"),
         }),
         onSubmit: async (values) => {
             setIsLoading(true);
@@ -85,7 +80,7 @@ const AddAdmin = () => {
     });
 
     const selectedRoleLabel =
-        roleOptions.find((option) => option.value === formikCreateAdmin.values.role)?.label || "-- Select role --";
+        roleOptions.find((option) => option.value === formikCreateAdmin.values.role_id)?.label || "-- Select role --";
 
     const fetchRoles = async (selectedRoleName?: string) => {
         if (!auth.token) return;
@@ -100,23 +95,23 @@ const AddAdmin = () => {
             });
 
             const res = await response.json();
-
             if (res.statusCode === 200 && Array.isArray(res.data)) {
                 const options = (res.data as RoleItem[]).map((role) => ({
-                    value: role.name,
+                    value: role.id,
                     label: role.name,
                 }));
 
                 options.unshift({ value: "", label: "-- Select role --" });
                 setRoleOptions(options);
+                console.log("Fetched roles:", options);
 
                 if (selectedRoleName && options.some((i) => i.value === selectedRoleName)) {
-                    formikCreateAdmin.setFieldValue("role", selectedRoleName);
+                    formikCreateAdmin.setFieldValue("role_id", selectedRoleName);
                     return;
                 }
 
-                if (formikCreateAdmin.values.role === "" && options.length > 1) {
-                    formikCreateAdmin.setFieldValue("role", options[1].value);
+                if (formikCreateAdmin.values.role_id === "" && options.length > 1) {
+                    formikCreateAdmin.setFieldValue("role_id", options[1].value);
                 }
             }
         } catch (error) {
@@ -124,8 +119,6 @@ const AddAdmin = () => {
             toast.error("Failed to load roles");
         }
     };
-
-
 
     useEffect(() => {
         fetchRoles();
@@ -144,47 +137,6 @@ const AddAdmin = () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
-
-    const handleCreateRole = async () => {
-        if (!newRoleName.trim()) {
-            toast.error("Role name is required");
-            return;
-        }
-
-        setIsCreateRoleLoading(true);
-        try {
-            const payload = {
-                name: newRoleName.trim(),
-                permissions: [],
-            };
-
-            const response = await fetch(`${API_URL}/admin/roles/create`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${auth.token}`,
-                },
-                body: JSON.stringify(payload),
-            });
-
-            const res = await response.json();
-
-            if (res.statusCode === 200 || res.statusCode === 201) {
-                toast.success("Create role success!");
-                closeAddRoleModal();
-                const createdRoleName = newRoleName.trim();
-                setNewRoleName("");
-                await fetchRoles(createdRoleName);
-            } else {
-                toast.error(`Create role failed! ${res.err ?? "Unknown error"}`);
-            }
-        } catch (error) {
-            console.error("Error creating role:", error);
-            toast.error("Create role failed!");
-        } finally {
-            setIsCreateRoleLoading(false);
-        }
-    };
 
     if (isLoading) {
         return <PulseLoading />;
@@ -272,8 +224,9 @@ const AddAdmin = () => {
                                                         key={option.value}
                                                         type="button"
                                                         onClick={() => {
-                                                            formikCreateAdmin.setFieldValue("role", option.value);
-                                                            formikCreateAdmin.setFieldTouched("role", true, false);
+                                                            console.log("Selected role:", option.label);
+                                                            formikCreateAdmin.setFieldValue("role_id", option.value);
+                                                            formikCreateAdmin.setFieldTouched("role_id", true, false);
                                                             setRoleSearch("");
                                                             setIsRoleDropdownOpen(false);
                                                         }}
@@ -289,8 +242,8 @@ const AddAdmin = () => {
                                     </div>
                                 )}
                             </div>
-                            {formikCreateAdmin.touched.role && formikCreateAdmin.errors.role ? (
-                                <div style={{ color: "red" }}>{formikCreateAdmin.errors.role}</div>
+                            {formikCreateAdmin.touched.role_id && formikCreateAdmin.errors.role_id ? (
+                                <div style={{ color: "red" }}>{formikCreateAdmin.errors.role_id}</div>
                             ) : null}
                         </div>
 
@@ -309,47 +262,6 @@ const AddAdmin = () => {
                         </div>
                     </div>
                 </form>
-
-                <Modal isOpen={isAddRoleOpen} onClose={closeAddRoleModal} className="max-w-[520px] m-4">
-                    <div className="p-6">
-                        <h5 className="mb-4 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
-                            Add Role
-                        </h5>
-
-                        <div className="space-y-4">
-                            <div>
-                                <Label>
-                                    Role Name <span className="text-error-500">*</span>
-                                </Label>
-                                <Input
-                                    type="text"
-                                    placeholder="Input role name"
-                                    value={newRoleName}
-                                    onChange={(e) => setNewRoleName(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="flex gap-3">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="w-full"
-                                    onClick={closeAddRoleModal}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    type="button"
-                                    className="w-full"
-                                    onClick={handleCreateRole}
-                                    disabled={isCreateRoleLoading}
-                                >
-                                    {isCreateRoleLoading ? "Saving..." : "Save Role"}
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </Modal>
             </div>
         </div>
     );
