@@ -14,6 +14,7 @@ import { toast } from "react-toastify";
 import * as Yup from "yup";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const PROTECTED_ROLES = ["super admin", "member"];
 
 type RoleItem = {
     id: string;
@@ -34,7 +35,7 @@ const AddAdmin = () => {
         () =>
             roleOptions.filter(
                 (option) => option.value !== "" && option.label.toLowerCase().includes(roleSearch.toLowerCase())
-            ),
+            ).filter((option) => !PROTECTED_ROLES.includes(option.label.toLowerCase())),
         [roleOptions, roleSearch]
     );
 

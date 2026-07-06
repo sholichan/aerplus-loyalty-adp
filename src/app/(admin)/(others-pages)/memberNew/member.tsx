@@ -24,6 +24,7 @@ import {
     ShopOrderType as ShopOrder,
 } from "@/utility/types";
 import DatePicker from "@/components/form/date-picker";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
 export interface LocationInfo {
     name: string;
@@ -100,7 +101,7 @@ export default function UserOrderTable() {
     };
 
     // Authentication guard
-    
+
 
     // Fetch users
     useEffect(() => {
@@ -118,7 +119,7 @@ export default function UserOrderTable() {
     const fetchUsers = async () => {
         try {
 
-            let usersURL = `${API_URL}/admin/user/get-all?search=${search}&outletId=${selectedOutlet}&page=${currentPage}&limit=${limit}`
+            let usersURL = `${API_URL}/admin/user/get-all?search=${search}&outletId=${selectedOutlet}&page=${currentPage}&limit=${limit}&role=member`;
             if (startDate && endDate) {
                 usersURL += `&startDate=${startDate}&endDate=${endDate}`
             }
@@ -504,12 +505,14 @@ export default function UserOrderTable() {
                                                                     <span className="font-medium">
                                                                         {user.total_point ?? "-"}
                                                                     </span>{" "}
-                                                                    <Button size="xs" onClick={() => {
-                                                                        openModal()
-                                                                        setInjectPoin("")
-                                                                        setMemberId(user.id)
-                                                                        setDisableAddPoin(false)
-                                                                    }} variant="primary"><PlusIcon /></Button>
+                                                                    <PermissionGuard module="member" action="update">
+                                                                        <Button size="xs" onClick={() => {
+                                                                            openModal()
+                                                                            setInjectPoin("")
+                                                                            setMemberId(user.id)
+                                                                            setDisableAddPoin(false)
+                                                                        }} variant="primary"><PlusIcon /></Button>
+                                                                    </PermissionGuard>
                                                                 </div>
                                                                 <div>
                                                                     <span className="text-gray-500 dark:text-gray-400">
@@ -531,29 +534,29 @@ export default function UserOrderTable() {
                                                                 </h4>
                                                                 <div className="inline-flex rounded-lg bg-white/70 p-1 ring-1 ring-gray-200/80 backdrop-blur dark:bg-gray-900/40 dark:ring-gray-700">
                                                                     <button
-                                                                        type="button" onClick={()=> setHistoryTab("orders")}
+                                                                        type="button" onClick={() => setHistoryTab("orders")}
                                                                         className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${historyTab === "orders"
-                                                                        ? "bg-brand-500 text-white shadow-theme-xs"
-                                                                        : "text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/[0.06]"
-                                                                        }`}
+                                                                            ? "bg-brand-500 text-white shadow-theme-xs"
+                                                                            : "text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/[0.06]"
+                                                                            }`}
                                                                     >
                                                                         Orders ({orders.length})
                                                                     </button>
                                                                     <button
-                                                                        type="button" onClick={()=> setHistoryTab("redeems")}
+                                                                        type="button" onClick={() => setHistoryTab("redeems")}
                                                                         className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${historyTab === "redeems"
-                                                                        ? "bg-brand-500 text-white shadow-theme-xs"
-                                                                        : "text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/[0.06]"
-                                                                        }`}
+                                                                            ? "bg-brand-500 text-white shadow-theme-xs"
+                                                                            : "text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/[0.06]"
+                                                                            }`}
                                                                     >
                                                                         Redeems ({redeems.length})
                                                                     </button>
                                                                     <button
-                                                                        type="button" onClick={()=> setHistoryTab("shopOrders")}
+                                                                        type="button" onClick={() => setHistoryTab("shopOrders")}
                                                                         className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${historyTab === "shopOrders"
-                                                                        ? "bg-brand-500 text-white shadow-theme-xs"
-                                                                        : "text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/[0.06]"
-                                                                        }`}
+                                                                            ? "bg-brand-500 text-white shadow-theme-xs"
+                                                                            : "text-gray-700 hover:bg-white/60 dark:text-gray-200 dark:hover:bg-white/[0.06]"
+                                                                            }`}
                                                                     >
                                                                         Shop ({shopOrders.length})
                                                                     </button>
