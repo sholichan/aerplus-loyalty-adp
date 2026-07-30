@@ -16,6 +16,7 @@ import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import * as XLSX from "xlsx";
 
 const ShopPage: React.FC = () => {
     const dispatch = useDispatch();
@@ -39,7 +40,7 @@ const ShopPage: React.FC = () => {
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-    
+
 
     useEffect(() => {
         const now = new Date();
@@ -83,7 +84,9 @@ const ShopPage: React.FC = () => {
                 setIsLoading(false);
             };
 
-            fetchShop();
+            if (startDate && endDate) {
+                fetchShop();
+            }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [refresh, currentPage, searchButton, startDate, endDate, selectedOutlet, limit]);
@@ -109,38 +112,47 @@ const ShopPage: React.FC = () => {
         openModal();
     };
 
-    const exportToCSV = () => {
-        const csvHeader = header.filter((item) => item !== "Action");
-        const rows = [
-            csvHeader,
-            ...tableData.map((item, index) => [
-                (currentPage - 1) * 10 + (index + 1),
-                item.outlet_name || "-",
-                item.order_number || "-",
-                item.payment_method || "-",
+    const exportToXLSX = () => {
+        const rows = tableData.map((item, index) => ({
+            No: (currentPage - 1) * 10 + (index + 1),
+            Outlet: item.outlet_name || "-",
+            Member: item.user.name || "-",
+            "Order Number": item.order_number || "-",
+            "Payment Method": item.payment_method || "-",
+            "Price / Point":
                 item.payment_unit === "point"
                     ? `${Number(item.price_or_point || 0).toLocaleString("id-ID")} Point`
                     : `Rp ${Number(item.price_or_point || 0).toLocaleString("id-ID")}`,
-                item.status || "-",
-                `${dateConvert(item.payment_date)} ${timeConvert(item.payment_date)}`,
-                `${dateConvert(item.pickup_date)} ${timeConvert(item.pickup_date)}`,
-                `${dateConvert(item.order_date)} ${timeConvert(item.order_date)}`,
-            ]),
-        ];
+            Status: item.status || "-",
+            "Order Date": `${dateConvert(item.order_date)} ${timeConvert(item.order_date)}`,
+            "Payment Date": `${dateConvert(item.payment_date)} ${timeConvert(item.payment_date)}`,
+            "Pickup Date": `${dateConvert(item.pickup_date)} ${timeConvert(item.pickup_date)}`,
+        }));
 
-        const csvContent =
-            "data:text/csv;charset=utf-8," +
-            rows.map((e) => e.join(";")).join("\n");
+        const worksheet = XLSX.utils.json_to_sheet(rows);
 
-        const link = document.createElement("a");
-        link.href = encodeURI(csvContent);
-        link.setAttribute(
-            "download",
-            `shop-page-${currentPage}-${selectedOutlet !== "" ? selectedOutlet : "all"}.csv`
+        // Auto width
+        const columnWidths = Object.keys(rows[0] || {}).map((key) => {
+            const maxLength = Math.max(
+                key.length,
+                ...rows.map((row) => String(row[key as keyof typeof row] ?? "").length)
+            );
+
+            return {
+                wch: maxLength + 2, // padding
+            };
+        });
+
+        worksheet["!cols"] = columnWidths;
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Shop");
+
+        XLSX.writeFile(
+            workbook,
+            `shop_page-${currentPage}_${startDate}_${endDate}_${selectedOutlet || "all"
+            }.xlsx`
         );
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     };
 
     const header = [
@@ -235,10 +247,10 @@ const ShopPage: React.FC = () => {
                                 />
                             </div>
                             <button
-                                onClick={exportToCSV}
+                                onClick={exportToXLSX}
                                 className="h-11 px-4 py-2 rounded-lg bg-blue-500 text-white text-sm hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
                             >
-                                Export CSV
+                                Download Excel
                             </button>
                         </div>
                     </div>
@@ -265,7 +277,7 @@ const ShopPage: React.FC = () => {
                                                 className={`px-2 py-1 rounded-full text-xs font-medium ${paymentStyles[item.payment_method] || "bg-gray-100 text-gray-600"
                                                     }`}
                                             >
-                                                { paymentLabel[item.payment_method] || item.payment_method }
+                                                {paymentLabel[item.payment_method] || item.payment_method}
                                             </span>
                                         </TableCell>
                                         <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
