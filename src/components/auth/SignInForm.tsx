@@ -28,7 +28,6 @@ export default function SignInForm() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
   
   const formikReg = useFormik({
     initialValues: {
@@ -41,7 +40,6 @@ export default function SignInForm() {
     }),
     onSubmit: async (values) => {
       // console.log(values);
-
       try {
         const response = await fetch(`${API_URL}admin/auth/login`, {
           method: "POST",
@@ -164,4 +162,3 @@ export default function SignInForm() {
     </div>
   );
 }
-

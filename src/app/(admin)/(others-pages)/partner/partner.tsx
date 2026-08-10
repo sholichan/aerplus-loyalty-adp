@@ -26,11 +26,26 @@ type AssignedOutletRow = {
     partner_end: string | null;
 };
 
+type DownloadHistoryRow = {
+    id: string;
+    report_type: string;
+    period_type?: string | null;
+    report_year?: number | null;
+    file_name: string;
+    downloaded_at: string;
+};
+
+
 const Partner: React.FC = () => {
     const dispatch = useDispatch();
     const router = useRouter();
     const auth = useSelector((state: RootState) => state.auth);
     const { isOpen, openModal, closeModal } = useModal();
+     const {
+        isOpen: isDownloadHistoryOpen,
+        openModal: openDownloadHistory,
+        closeModal: closeDownloadHistory,
+    } = useModal();
 
     const [tableData, setTableData] = useState<PartnerType[]>([]);
     const [refresh, setRefresh] = useState<boolean>(false);
@@ -48,9 +63,12 @@ const Partner: React.FC = () => {
     const [prevSelOutlet, setPrevSeloutlet] = useState<string>("");
     const { selectedOutlet } = useOutlet();
 
+    // new
+    const [downloadHistoryRows, setDownloadHistoryRows] = useState<DownloadHistoryRow[]>([]);
+    const [isDownloadHistoryLoading, setIsDownloadHistoryLoading] = useState<boolean>(false);
+    const [downloadHistoryError, setDownloadHistoryError] = useState<string>("");
+
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-
 
     useEffect(() => {
         setPrevSeloutlet(selectedOutlet);
@@ -164,12 +182,62 @@ const Partner: React.FC = () => {
         }
     };
 
-    const closeOutletModal = () => {
-        setSelectedPartner(null);
-        setOutletRows([]);
-        setOutletError("");
-        closeModal();
+    const openDownloadHistoryModal = async (partner: PartnerType) => {
+        setSelectedPartner(partner);
+        openDownloadHistory();  
+
+        setDownloadHistoryRows([]);
+        setDownloadHistoryError("");
+
+        if (!auth.token) return;
+
+        try {
+            setIsDownloadHistoryLoading(true);
+
+            const response = await fetch(
+                `${API_URL}/admin/partner/${partner.id}/download-history`, 
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${auth.token}`,
+                    },
+                }
+            );
+
+            const res = await response.json();
+
+            if (res?.statusCode === 200) {
+                setDownloadHistoryRows(
+                    Array.isArray(res.data)
+                        ? (res.data as DownloadHistoryRow[])
+                        : []
+                );
+            } else {
+                setDownloadHistoryError(
+                    res?.err || "Failed to load download history"
+                );
+            }
+        } catch (error) {
+            console.error("Error fetching download history:", error);
+            setDownloadHistoryError("Failed to load download history");
+        } finally {
+            setIsDownloadHistoryLoading(false);
+        }
     };
+const closeOutletModal = () => {
+    setSelectedPartner(null);
+    setOutletRows([]);
+    setOutletError("");
+    closeModal();
+};
+
+const closeDownloadHistoryModal = () => {
+    setSelectedPartner(null);
+    setDownloadHistoryRows([]);
+    setDownloadHistoryError("");
+    closeDownloadHistory();
+};
 
     return isLoading ? (
         <PulseLoading />
@@ -260,6 +328,13 @@ const Partner: React.FC = () => {
                                                     onClick={() => openOutletModal(i)}
                                                 >
                                                     View Outlets
+                                                </button>
+
+                                                <button
+                                                    className="px-3 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:bg-white/[0.06]"
+                                                    onClick={() => openDownloadHistoryModal(i)}
+                                                >
+                                                    Historical Download
                                                 </button>
                                                 <PermissionGuard module="partner" action="update">
                                                     <button
@@ -357,6 +432,97 @@ const Partner: React.FC = () => {
                     </div>
                 </div>
             </Modal>
+            
+                    <Modal
+            isOpen={isDownloadHistoryOpen}
+            onClose={closeDownloadHistoryModal}
+            className="max-w-[900px] m-4"
+        >
+            <div className="flex max-h-[85vh] flex-col">
+                <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+                    <h4 className="font-semibold text-gray-800 dark:text-white/90">
+                        Historical Download - {selectedPartner?.name || "-"}
+                    </h4>
+
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Member: {selectedPartner?.user?.user_name || "-"}
+                    </p>
+                </div>
+
+                <div className="flex-1 min-h-0 p-6">
+                    <div className="max-h-[60vh] overflow-auto custom-scrollbar">
+                        <TableBasic
+                            header={[
+                                "Report Type",
+                                "Period",
+                                "Year",
+                                "File Name",
+                                "Downloaded At",
+                            ]}
+                            isSetMinW="none"
+                        >
+                            {isDownloadHistoryLoading ? (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={5}
+                                        className="p-3 py-10 text-center text-theme-sm text-gray-500 dark:text-gray-400"
+                                    >
+                                        Memuat download history...
+                                    </TableCell>
+                                </TableRow>
+                            ) : downloadHistoryError ? (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={5}
+                                        className="p-3 py-10 text-center text-theme-sm text-red-500"
+                                    >
+                                        {downloadHistoryError}
+                                    </TableCell>
+                                </TableRow>
+                            ) : downloadHistoryRows.length > 0 ? (
+                                downloadHistoryRows.map((row) => (
+                                    <TableRow key={row.id}>
+                                        <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                            {row.report_type || "-"}
+                                        </TableCell>
+
+                                        <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                            {row.period_type || "-"}
+                                        </TableCell>
+
+                                        <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                            {row.report_year || "-"}
+                                        </TableCell>
+
+                                        <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                            {row.file_name || "-"}
+                                        </TableCell>
+
+                                        <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                            {row.downloaded_at
+                                                ? dayjs(row.downloaded_at).format(
+                                                      "YYYY-MM-DD HH:mm:ss"
+                                                  )
+                                                : "-"}
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={5}
+                                        className="p-3 py-10 text-center text-theme-sm text-gray-500 dark:text-gray-400"
+                                    >
+                                        Tidak ada historical download.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBasic>
+                    </div>
+                </div>
+            </div>
+        </Modal>
+
         </>
     );
 };
