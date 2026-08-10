@@ -28,13 +28,15 @@ type AssignedOutletRow = {
 
 type DownloadHistoryRow = {
     id: string;
+    outlet_id: number;
+    outlet?: { id: number; name: string } | null;
     report_type: string;
     period_type?: string | null;
+    report_month?: number | null;
     report_year?: number | null;
     file_name: string;
     downloaded_at: string;
 };
-
 
 const Partner: React.FC = () => {
     const dispatch = useDispatch();
@@ -453,8 +455,9 @@ const closeDownloadHistoryModal = () => {
                     <div className="max-h-[60vh] overflow-auto custom-scrollbar">
                         <TableBasic
                             header={[
+                                "Outlet Name",
                                 "Report Type",
-                                "Period",
+                                "Month",
                                 "Year",
                                 "File Name",
                                 "Downloaded At",
@@ -483,11 +486,19 @@ const closeDownloadHistoryModal = () => {
                                 downloadHistoryRows.map((row) => (
                                     <TableRow key={row.id}>
                                         <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                                <div className="font-medium text-gray-700 dark:text-gray-200">
+                                                    {row.outlet?.name || "-"}
+                                                </div>
+                                            </TableCell>
+
+                                        <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                             {row.report_type || "-"}
                                         </TableCell>
 
-                                        <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                            {row.period_type || "-"}
+                                        <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400 capitalize">
+                                                {row.report_month 
+                                                    ? dayjs().month(row.report_month - 1).format("MMMM") 
+                                                    : "-"}
                                         </TableCell>
 
                                         <TableCell className="p-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
